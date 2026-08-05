@@ -1,0 +1,480 @@
+/* Windows Media Player 9's blue "Corona" look: a dark glassy interior, a column of
+   tall feature buttons down the left, and the transport across the bottom.
+
+   Prefixed `wmp-` because none of it is shared with the shell's own chrome. */
+
+.wmp {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  user-select: none;
+  background: #0b1330;
+  color: #dce8fb;
+}
+
+.wmp-body {
+  flex: 1 1 auto;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ---- Feature bar ---- */
+
+.wmp-features {
+  flex: 0 0 78px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px;
+  background: linear-gradient(180deg, #23417f 0%, #16294f 100%);
+  border-right: 1px solid #0a1330;
+}
+
+.wmp-feature {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 4px 5px;
+  cursor: default;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  color: #cfe0f8;
+  font: var(--xp-fs) / 1.2 var(--xp-font);
+}
+.wmp-feature:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+/* The current feature lights up and squares off its right edge, the way the real
+   button ran into the panel it opened. */
+.wmp-feature[data-active='true'] {
+  background: linear-gradient(90deg, #3f74d4 0%, #2a5aa8 100%);
+  border-color: #6f9ee8;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* ---- Views ---- */
+
+.wmp-view {
+  flex: 1 1 auto;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  padding: 3px;
+}
+
+.wmp-nowplaying {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 3px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ---- Visualizations ---- */
+
+.wmp-vis {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 100%, #14224a 0%, #05091c 100%);
+  border: 1px solid #2b3f74;
+}
+
+/* Bars: 32 columns rising from the floor. `--peak` per bar comes from the
+   component; the animation is paused outright when nothing is playing, so a
+   stopped player costs nothing at all. */
+.wmp-bars {
+  position: absolute;
+  inset: 8px 6px 6px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+.wmp-bar {
+  flex: 1 1 auto;
+  height: var(--peak, 50%);
+  min-width: 2px;
+  border-radius: 1px 1px 0 0;
+  background: linear-gradient(180deg, #7ee0ff 0%, #2f8fe0 45%, #1b4fa8 100%);
+  transform: scaleY(0.18);
+  transform-origin: bottom;
+  animation-name: wmp-bounce;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-play-state: paused;
+}
+.wmp-vis[data-playing='true'] .wmp-bar {
+  animation-play-state: running;
+}
+@keyframes wmp-bounce {
+  from {
+    transform: scaleY(0.12);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Waves: two sine paths twice as wide as the panel, slid left forever. */
+.wmp-waves {
+  position: absolute;
+  inset: 0;
+  width: 200%;
+  height: 100%;
+}
+.wmp-wave {
+  animation: wmp-drift 3.4s linear infinite;
+  animation-play-state: paused;
+}
+.wmp-vis[data-playing='true'] .wmp-wave {
+  animation-play-state: running;
+}
+.wmp-wave--back {
+  fill: #1c4f9c;
+  opacity: 0.75;
+  animation-duration: 5.2s;
+}
+.wmp-wave--front {
+  fill: #3f9de0;
+  opacity: 0.85;
+}
+@keyframes wmp-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Album art: there isn't any, so say so on a blank disc. */
+.wmp-vis--art {
+  display: grid;
+  place-items: center;
+}
+.wmp-art {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.wmp-art-disc {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #0b1330 0 14px, transparent 14px),
+    conic-gradient(
+      from 0deg,
+      #2b4f8f,
+      #4d7fd0,
+      #2b4f8f,
+      #4d7fd0,
+      #2b4f8f,
+      #4d7fd0,
+      #2b4f8f
+    );
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.wmp-art-caption {
+  color: #8fa8d8;
+}
+
+/* ---- Playlist ---- */
+
+.wmp-playlist {
+  flex: 0 0 176px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #0d1734;
+  border: 1px solid #2b3f74;
+}
+.wmp-playlist-head {
+  display: flex;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  padding: 3px 6px;
+  background: linear-gradient(180deg, #2f5596 0%, #1d3868 100%);
+  border-bottom: 1px solid #0a1330;
+  font-weight: bold;
+}
+.wmp-playlist-head > span {
+  font-weight: normal;
+  color: #a8c0e8;
+}
+.wmp-playlist-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.wmp-track {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  padding: 2px 6px;
+  cursor: default;
+  text-align: left;
+  border: 0;
+  background: none;
+  color: #cfe0f8;
+  font: var(--xp-fs) var(--xp-font);
+}
+.wmp-track:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.wmp-track[data-selected='true'] {
+  background: #2f5596;
+  color: #fff;
+}
+/* The track actually loaded is called out even when the selection has moved on. */
+.wmp-track[data-playing='true'] .wmp-track-title {
+  font-weight: bold;
+  color: #8ef0a8;
+}
+.wmp-track-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.wmp-track-time {
+  flex: 0 0 auto;
+  color: #9db6e0;
+}
+
+/* ---- Media library ---- */
+
+.wmp-library {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: #0d1734;
+  border: 1px solid #2b3f74;
+}
+.wmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--xp-fs) var(--xp-font);
+}
+.wmp-table th {
+  position: sticky;
+  top: 0;
+  padding: 3px 7px;
+  background: linear-gradient(180deg, #2f5596 0%, #1d3868 100%);
+  border-right: 1px solid #0a1330;
+  text-align: left;
+  font-weight: bold;
+  white-space: nowrap;
+}
+.wmp-table td {
+  padding: 2px 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wmp-table tbody tr[data-selected='true'] {
+  background: #2f5596;
+  color: #fff;
+}
+.wmp-cell-right {
+  text-align: right;
+}
+
+/* ---- The features that need hardware we haven't got ---- */
+
+.wmp-unavailable {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 32px;
+  background: #0d1734;
+  border: 1px solid #2b3f74;
+}
+.wmp-unavailable p {
+  margin: 0;
+  max-width: 44ch;
+  color: #a8c0e8;
+  line-height: 1.5;
+}
+.wmp-unavailable-head {
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff !important;
+}
+
+/* ---- Transport ---- */
+
+.wmp-transport {
+  flex: 0 0 auto;
+  padding: 4px 8px 6px;
+  background: linear-gradient(180deg, #1c3363 0%, #0e1c3c 100%);
+  border-top: 1px solid #3d5d9e;
+}
+
+.wmp-seekrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wmp-time {
+  flex: 0 0 auto;
+  color: #a8c0e8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Both sliders share the thin dark trough and small round grip. */
+.wmp-seek,
+.wmp-volume {
+  appearance: none;
+  height: 14px;
+  background: none;
+  cursor: default;
+}
+.wmp-seek {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.wmp-volume {
+  flex: 0 0 74px;
+}
+.wmp-seek::-webkit-slider-runnable-track,
+.wmp-volume::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: #071023;
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.wmp-seek::-webkit-slider-thumb,
+.wmp-volume::-webkit-slider-thumb {
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #eaf4ff 0%, #7fb2ea 55%, #2a5aa8 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.wmp-seek::-moz-range-track,
+.wmp-volume::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: #071023;
+}
+.wmp-seek::-moz-range-thumb,
+.wmp-volume::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border: 0;
+  border-radius: 50%;
+  background: #7fb2ea;
+}
+
+.wmp-buttons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+.wmp-gap {
+  flex: 0 0 10px;
+}
+
+/* Play is the big glassy one; everything else is a smaller version of it. */
+.wmp-play,
+.wmp-round {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: default;
+  border-radius: 50%;
+  border: 1px solid #5f8fd8;
+  background: radial-gradient(circle at 38% 26%, #79b6ef 0%, #2f6bc0 52%, #143a7e 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.wmp-play {
+  width: 34px;
+  height: 34px;
+}
+.wmp-round {
+  width: 24px;
+  height: 24px;
+}
+.wmp-play:hover,
+.wmp-round:hover {
+  filter: brightness(1.18);
+}
+.wmp-play:active,
+.wmp-round:active {
+  filter: brightness(0.85);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+.wmp-play svg {
+  width: 20px;
+  height: 20px;
+}
+.wmp-round svg {
+  width: 14px;
+  height: 14px;
+}
+.wmp-mute[data-muted='true'] {
+  border-color: #c88;
+}
+
+.wmp-toggle {
+  padding: 2px 8px;
+  cursor: default;
+  border: 1px solid #3d5d9e;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #b8cdf0;
+  font: var(--xp-fs) var(--xp-font);
+}
+.wmp-toggle[data-on='true'] {
+  background: linear-gradient(180deg, #4d86dc 0%, #2a5aa8 100%);
+  border-color: #7fb2ea;
+  color: #fff;
+}
+
+/* ---- Status ---- */
+
+.wmp-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  background: #081128;
+  border-top: 1px solid #2b3f74;
+  color: #8fa8d8;
+}
+.wmp-status > span:nth-child(1) {
+  flex: 0 0 60px;
+}
+.wmp-status > span:nth-child(2) {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wmp-about {
+  max-width: 320px;
+  line-height: 1.5;
+}

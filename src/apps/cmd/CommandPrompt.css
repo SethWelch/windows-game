@@ -1,0 +1,60 @@
+/* A console window: no menus, no toolbar, no status bar — just a black client
+   area in a fixed-pitch font, which is the whole of cmd.exe's chrome. */
+
+.xp-cmd {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #000;
+}
+
+.xp-cmd-screen {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 2px 4px;
+  background: #000;
+  color: #c0c0c0;
+  /* The console's own font and metrics, not the shell's UI font. */
+  font: 13px/1.28 var(--xp-mono);
+  overflow: auto;
+  cursor: text;
+}
+
+.xp-cmd-line {
+  /* `pre-wrap` is what keeps dir's column padding aligned while still wrapping
+     a line too long for the window. */
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 1.28em;
+}
+
+.xp-cmd-entry {
+  display: flex;
+  align-items: baseline;
+}
+.xp-cmd-prompt {
+  white-space: pre;
+  flex: 0 0 auto;
+}
+
+.xp-cmd-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  /* The console cursor was a block. This is as close as a text caret gets. */
+  caret-color: #c0c0c0;
+}
+
+/* Console selection was white-on-blue, not the shell's Luna highlight. */
+.xp-cmd-screen ::selection {
+  background: #c0c0c0;
+  color: #000;
+}

@@ -1,0 +1,244 @@
+/* mspaint: a tool box down the left, a grey workspace with the sheet floating in
+   it, the colour box along the bottom, and the status bar under that. */
+
+.xp-paint {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  user-select: none;
+}
+
+.xp-paint-main {
+  flex: 1 1 auto;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ---- Tool box ---- */
+
+.xp-paint-tools {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 2px;
+  background: var(--face);
+  border-right: 1px solid var(--shadow);
+  box-shadow: inset -1px 0 0 #fff;
+}
+
+.xp-paint-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 25px);
+  gap: 1px;
+}
+
+.xp-paint-tool {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 24px;
+  padding: 0;
+  cursor: default;
+  background: var(--face);
+  border: 1px solid;
+  border-color: #fff var(--dkshadow) var(--dkshadow) #fff;
+}
+.xp-paint-tool[data-selected='true'] {
+  /* The pressed-in look the current tool held. */
+  border-color: var(--dkshadow) #fff #fff var(--dkshadow);
+  background: var(--face-light);
+}
+.xp-paint-tool[disabled] .xp-paint-tool-art {
+  opacity: 0.35;
+}
+.xp-paint-tool-art {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+/* The options well: sunken, and empty for the tools that take no settings. */
+.xp-paint-options {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 60px;
+  margin-top: 4px;
+  padding: 4px 2px;
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+}
+
+.xp-paint-size {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 11px;
+  padding: 0;
+  cursor: default;
+  background: var(--face);
+  border: 1px solid transparent;
+}
+.xp-paint-size[data-selected='true'] {
+  background: var(--menu-hi);
+  border-color: var(--menu-hi);
+}
+.xp-paint-size > span {
+  display: block;
+  width: 26px;
+  background: #000;
+}
+.xp-paint-size[data-selected='true'] > span {
+  background: #fff;
+}
+
+.xp-paint-fill {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 17px;
+  padding: 0;
+  cursor: default;
+  background: var(--face);
+  border: 1px solid transparent;
+}
+.xp-paint-fill[data-selected='true'] {
+  background: var(--menu-hi);
+  border-color: var(--menu-hi);
+}
+.xp-paint-fill > span {
+  display: block;
+  width: 22px;
+  height: 11px;
+  border: 1px solid #000;
+}
+.xp-paint-fill[data-style='filled'] > span {
+  border-color: transparent;
+  background: #808080;
+}
+.xp-paint-fill[data-style='both'] > span {
+  background: #808080;
+}
+
+/* ---- Workspace ---- */
+
+.xp-paint-workspace {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 5px;
+  /* The application workspace grey, a shade darker than the dialog face. */
+  background: #808080;
+  overflow: auto;
+}
+
+/* The sheet sits on the workspace with a thin border and its own shadow. */
+.xp-paint-sheet {
+  display: inline-block;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #000;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.xp-paint-canvas {
+  display: block;
+  /* Every drawing tool wants the crosshair; the real one swapped in per-tool
+     cursors, but none of them were the arrow. */
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* ---- Colour box ---- */
+
+.xp-paint-colorbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 3px 6px;
+  background: var(--face);
+  border-top: 1px solid var(--shadow);
+  box-shadow: inset 0 1px 0 #fff;
+}
+
+/* Foreground square overlapping the background square. */
+.xp-paint-current {
+  position: relative;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+}
+.xp-paint-current-fg,
+.xp-paint-current-bg {
+  position: absolute;
+  width: 17px;
+  height: 17px;
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+}
+.xp-paint-current-fg {
+  left: 2px;
+  top: 2px;
+  z-index: 1;
+}
+.xp-paint-current-bg {
+  left: 12px;
+  top: 12px;
+}
+
+.xp-paint-palette {
+  display: grid;
+  grid-template-columns: repeat(14, 16px);
+  grid-template-rows: repeat(2, 16px);
+  /* Column-major, so each dark sits above its bright counterpart. */
+  grid-auto-flow: column;
+  gap: 1px;
+}
+.xp-paint-swatch {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  cursor: default;
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+}
+
+/* ---- Status bar ---- */
+
+.xp-paint-hint {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.xp-paint-coords {
+  flex: 0 0 74px;
+}
+
+/* ---- Dialogs ---- */
+
+.xp-paint-attrs {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 250px;
+}
+.xp-paint-attrs .xp-choice > label {
+  flex: 0 0 54px;
+}
+.xp-paint-attrs .xp-field {
+  width: 70px;
+  height: 21px;
+}
+.xp-paint-attrs-note {
+  margin: 2px 0 0;
+  max-width: 240px;
+  color: var(--disabled-fg);
+}
+.xp-paint-about {
+  max-width: 310px;
+  line-height: 1.5;
+}

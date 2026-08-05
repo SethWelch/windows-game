@@ -1,0 +1,196 @@
+.xp-start-menu {
+  position: absolute;
+  bottom: var(--taskbar-h);
+  left: 0;
+  width: 400px;
+  z-index: 20;
+  border-radius: 8px 8px 0 0;
+  /* Deliberately NOT overflow:hidden — the same rule Window.css follows. Clipping
+     here to round the header's corners also clipped every All Programs sub-panel at
+     the panel's edge, and those have to spill outside it. The header rounds itself
+     instead. */
+  /* Menus and tooltips are the only XP surfaces that cast a shadow. */
+  box-shadow: 2px -2px 5px rgba(0, 0, 0, 0.35);
+  font: var(--xp-fs) var(--xp-font);
+  user-select: none;
+}
+
+.xp-sm-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 54px;
+  padding: 0 10px;
+  background: var(--title-active);
+  /* Carries the panel's own radius, since the panel no longer clips it. */
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid #e97b1a;
+  color: #fff;
+  font: bold 14px var(--xp-title-font);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.xp-sm-body {
+  display: flex;
+  align-items: stretch;
+  /* XP's Start menu was a fixed panel — roughly 400x470 at 96dpi — and it stayed
+     that size whether it held two pinned programs or a dozen. Sizing to content
+     instead produced a stub barely taller than the taskbar. `min-height`, not
+     `height`, so a longer pinned list still grows it. */
+  min-height: 378px;
+}
+
+.xp-sm-left {
+  flex: 0 0 196px;
+  background: #fff;
+  padding: 5px 3px;
+  display: flex;
+  flex-direction: column;
+}
+
+.xp-sm-right {
+  flex: 1 1 auto;
+  background: linear-gradient(180deg, #dae7f8 0%, #c9ddf6 100%);
+  border-left: 1px solid #a9c3e8;
+  padding: 5px 3px;
+}
+
+.xp-sm-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 7px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: default;
+  color: #000;
+  font: var(--xp-fs) var(--xp-font);
+  border-radius: 2px;
+}
+.xp-sm-item:hover {
+  background: var(--menu-hi);
+  color: #fff;
+}
+.xp-sm-item-icon {
+  flex: 0 0 24px;
+  display: grid;
+  place-items: center;
+}
+.xp-sm-right .xp-sm-item {
+  font-weight: bold;
+  color: #0b3f8f;
+}
+.xp-sm-right .xp-sm-item:hover {
+  color: #fff;
+}
+
+.xp-sm-sep {
+  height: 1px;
+  margin: 5px 8px;
+  background: #d3d3ce;
+  border-bottom: 1px solid #fff;
+}
+/* The divider is what falls to the bottom of the column, carrying All Programs
+   with it — XP put exactly one rule there, directly above All Programs. Pushing
+   the button down instead left the divider stranded under the pinned list with a
+   second rule of its own above the button. */
+.xp-sm-left .xp-sm-sep {
+  margin-top: auto;
+}
+
+.xp-sm-allprograms {
+  font-weight: bold;
+}
+.xp-sm-chevron {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #4aa63c 0%, #2b7d1f 100%);
+  color: #fff;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.xp-sm-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--title-active);
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.45);
+}
+.xp-sm-footer button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: var(--xp-fs) var(--xp-font);
+  text-shadow: inherit;
+  cursor: default;
+  padding: 3px 5px;
+  border-radius: 2px;
+}
+.xp-sm-footer button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.xp-sm-glyph {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #fff;
+}
+.xp-sm-glyph--logoff {
+  background: linear-gradient(180deg, #f0b429 0%, #d98a0c 100%);
+}
+.xp-sm-glyph--shutdown {
+  background: linear-gradient(180deg, #e06a4e 0%, #b8301a 100%);
+}
+
+/* All Programs flyout */
+.xp-sm-flyout {
+  position: absolute;
+  left: 196px;
+  bottom: 44px;
+  min-width: 170px;
+  padding: 2px;
+  background: #fff;
+  border: 1px solid #a0a0a0;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.28);
+}
+
+/* A folder and the panel it opens. */
+.xp-sm-branch {
+  position: relative;
+}
+/* Sub-panels grow up and to the right from their own row, which keeps them going
+   the same direction the Start menu does — away from the taskbar. */
+.xp-sm-flyout--sub {
+  left: 100%;
+  bottom: -3px;
+}
+.xp-sm-folderrow {
+  font-weight: bold;
+}
+/* Folders get a plain arrow rather than the green chevron All Programs wears. */
+.xp-sm-chevron--plain {
+  background: none;
+  color: #33333a;
+  font-size: 8px;
+}
+.xp-sm-item:hover .xp-sm-chevron--plain {
+  color: #fff;
+}

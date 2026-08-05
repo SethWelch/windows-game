@@ -1,0 +1,286 @@
+/* Solitaire's table, cards and backs.
+
+   Card geometry is 71x96 — the size the Windows deck bitmaps had shipped at since
+   3.0. FAN_UP/FAN_DOWN in Solitaire.tsx position the stacks against this height,
+   so the two have to agree. */
+.xp-solitaire {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  user-select: none;
+  /* The containing block for the drag layer. It has to be an element this app
+     owns: `position: fixed` would resolve against `.xp-window` instead, which
+     carries a transform while the window is not maximized. */
+  position: relative;
+}
+
+.xp-sol-table {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 14px 12px;
+  /* The felt. Solitaire never followed the Luna repaint — this is the same flat
+     #008000 from the 16-colour palette it launched with. */
+  background: #008000;
+  overflow: auto;
+}
+
+/* Both rows share one 7-column grid, which is what lines the foundations up over
+   the tableau piles the way XP had them. */
+.xp-sol-row {
+  display: grid;
+  grid-template-columns: repeat(7, 71px);
+  gap: 12px;
+  justify-content: start;
+}
+.xp-sol-tableau {
+  margin-top: 22px;
+  align-items: start;
+}
+
+.xp-sol-slot,
+.xp-sol-pile {
+  position: relative;
+  width: 71px;
+}
+.xp-sol-slot {
+  height: 96px;
+  border-radius: 5px;
+  /* The empty outline: a hairline frame on the felt, no fill. */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+.xp-sol-pile {
+  min-height: 96px;
+}
+
+/* The waste fans right, over the deliberately empty third column. */
+.xp-sol-waste {
+  overflow: visible;
+  box-shadow: none;
+}
+.xp-sol-gap {
+  box-shadow: none;
+}
+
+/* An exhausted stock still reads as clickable — that click turns the deck over. */
+.xp-sol-stock[data-empty='true'] {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+.xp-sol-stock[data-empty='true']::after {
+  content: '';
+  position: absolute;
+  inset: 32px 24px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  border-right-color: transparent;
+}
+
+/* ---- Cards ---- */
+
+.xp-sol-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 71px;
+  height: 96px;
+  border-radius: 5px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px #6b6b6b,
+    1px 1px 2px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.xp-sol-face {
+  position: absolute;
+  inset: 0;
+  /* Pips are positioned against this box as percentages. */
+  font: bold 12px/1 var(--xp-font);
+  color: #000;
+}
+.xp-sol-face[data-red='true'] {
+  color: #c8102e;
+}
+
+/* Corner index: rank over a small pip, mirrored into the opposite corner. */
+.xp-sol-index {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 13px;
+  line-height: 1;
+}
+.xp-sol-index--flipped {
+  top: auto;
+  left: auto;
+  right: 3px;
+  bottom: 2px;
+  transform: rotate(180deg);
+}
+.xp-sol-index-pip {
+  width: 8px;
+  height: 8px;
+}
+
+.xp-sol-pip {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+}
+
+/* Court cards: a ruled panel with the letter at full size. */
+.xp-sol-court {
+  position: absolute;
+  inset: 14px 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 0;
+  border: 1px solid currentcolor;
+  border-radius: 2px;
+}
+.xp-sol-court-letter {
+  font: bold 26px/1 var(--xp-title-font);
+}
+.xp-sol-court-pip {
+  width: 11px;
+  height: 11px;
+  align-self: flex-start;
+  margin-left: 3px;
+}
+.xp-sol-court-pip--flipped {
+  align-self: flex-end;
+  margin: 0 3px 0 0;
+  transform: rotate(180deg);
+}
+
+/* ---- Backs ----
+   Four of XP's twelve, each built from gradients rather than a bitmap. */
+.xp-sol-back {
+  position: absolute;
+  inset: 0;
+  border: 3px solid #fff;
+  border-radius: 5px;
+}
+.xp-sol-back[data-back='1'] {
+  background:
+    repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.5) 0 1px,
+        transparent 1px 6px
+      ),
+    repeating-linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, 0.5) 0 1px,
+        transparent 1px 6px
+      ),
+    linear-gradient(160deg, #2f6fd0 0%, #143f92 100%);
+}
+.xp-sol-back[data-back='2'] {
+  background:
+    repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.45) 0 1px,
+        transparent 1px 6px
+      ),
+    repeating-linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, 0.45) 0 1px,
+        transparent 1px 6px
+      ),
+    linear-gradient(160deg, #c8323c 0%, #8a121c 100%);
+}
+.xp-sol-back[data-back='3'] {
+  background:
+    radial-gradient(circle at 50% 50%, #f4d35e 0 6px, transparent 6px),
+    radial-gradient(circle at 50% 50%, #1b6f4a 6px 12px, transparent 12px),
+    repeating-linear-gradient(90deg, #0d5236 0 7px, #12613f 7px 14px);
+}
+.xp-sol-back[data-back='4'] {
+  background:
+    repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.28) 0 3px,
+        transparent 3px 11px
+      ),
+    repeating-linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.28) 0 3px,
+        transparent 3px 11px
+      ),
+    linear-gradient(160deg, #6e57b8 0%, #3b2a78 100%);
+}
+
+/* ---- Drag layer ---- */
+
+.xp-sol-drag {
+  /* Absolute against `.xp-solitaire`, and outside `.xp-window-content` so the
+     cards aren't clipped when carried past the edge of the table. */
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 71px;
+  /* Must not swallow the pointer: the drop target is hit-tested through it. */
+  pointer-events: none;
+  z-index: 40;
+  /* Promoted to its own compositing layer for the duration of the drag. Without
+     it, every frame repaints the felt and whatever cards the layer crossed —
+     around 600 SVG pips on a full table — instead of just moving a texture. */
+  will-change: transform;
+}
+.xp-sol-drag .xp-sol-card {
+  box-shadow:
+    0 0 0 1px #6b6b6b,
+    3px 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Status bar and dialogs ---- */
+
+.xp-sol-status .xp-statusbar-cell {
+  min-width: 110px;
+}
+
+.xp-sol-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 230px;
+}
+.xp-sol-options-note {
+  margin: 2px 0 0;
+  max-width: 230px;
+  color: var(--disabled-fg);
+}
+
+.xp-sol-decks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.xp-sol-deck-pick {
+  position: relative;
+  width: 57px;
+  height: 78px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: none;
+  cursor: default;
+}
+.xp-sol-deck-pick[data-selected='true'] {
+  border-color: var(--menu-hi);
+  box-shadow: 0 0 0 1px var(--menu-hi);
+}
+.xp-sol-deck-pick .xp-sol-back {
+  border-width: 2px;
+  border-radius: 4px;
+}
+
+.xp-sol-about {
+  max-width: 310px;
+  line-height: 1.5;
+}

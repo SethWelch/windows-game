@@ -1,0 +1,175 @@
+/* Covers the owner window's client area, which is what makes the owner
+   unclickable while a dialog is open. Deliberately NOT fixed/full-screen: a
+   screen-wide backdrop made the desktop and other programs unselectable, and a
+   global z-index kept the dialog above windows it should sit behind.
+   `.xp-window` is position:absolute, so it is the containing block here — the
+   z-index therefore stays scoped to that one window's stacking context. */
+.xp-dialog-host {
+  position: absolute;
+  /* Stops below the titlebar so the owner can still be dragged, as in XP. */
+  inset: var(--titlebar-h) 0 0 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+}
+
+.xp-dialog {
+  display: flex;
+  flex-direction: column;
+  padding: 0 3px 3px;
+  /* Same continuous blue panel as .xp-window — see Window.css. */
+  background: var(--frame-body);
+  border-radius: 8px 8px 0 0;
+  font: var(--xp-fs) / 1.35 var(--xp-font);
+  color: #000;
+  box-shadow:
+    inset 0 0 0 1px var(--frame-edge),
+    /* Dialogs DO cast a shadow in XP, unlike ordinary windows. */ 3px 3px 10px
+      rgba(0, 0, 0, 0.35);
+}
+
+.xp-dialog-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--titlebar-h);
+  /* Same edge-to-edge treatment as .xp-titlebar — see Window.css for why the
+     radius must match the frame's exactly. */
+  padding: 4px 8px 4px 9px;
+  margin: 0 -3px;
+  border-radius: 8px 8px 0 0;
+  background: var(--title-active);
+  box-shadow:
+    inset 1px 0 0 var(--frame-edge),
+    inset -1px 0 0 var(--frame-edge);
+  font: bold 13px/1 var(--xp-title-font);
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.55);
+  user-select: none;
+  touch-action: none;
+}
+.xp-dialog-titlebar > span {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xp-dialog-body {
+  /* Must set this explicitly: .xp-dialog's background is the frame blue, so
+     without it the whole dialog interior renders blue. */
+  background: var(--face);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.xp-dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+/* Message box: icon beside the text. */
+.xp-msgbox {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  max-width: 380px;
+  padding: 4px 2px 8px;
+}
+.xp-msgbox-glyph {
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font: bold 22px/1 var(--xp-title-font);
+  color: #fff;
+}
+.xp-msgbox-glyph--warn {
+  background: linear-gradient(180deg, #ffd75e 0%, #e8a300 100%);
+  color: #4a3000;
+}
+.xp-msgbox-glyph--info {
+  background: linear-gradient(180deg, #6fb4f0 0%, #1a6fc4 100%);
+}
+.xp-msgbox-text {
+  white-space: pre-wrap;
+  padding-top: 6px;
+}
+
+/* ---- File dialog ---- */
+
+.xp-filedlg {
+  width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.xp-filedlg-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.xp-filedlg-row > label {
+  flex: 0 0 76px;
+  text-align: right;
+}
+.xp-filedlg-row > .xp-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 21px;
+}
+.xp-filedlg-list {
+  height: 176px;
+  overflow: auto;
+  padding: 2px;
+  background: #fff;
+  border: 1px solid var(--field-border);
+}
+.xp-filedlg-file {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: default;
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+}
+.xp-filedlg-file[data-selected='true'] {
+  background: var(--menu-hi);
+  color: #fff;
+}
+.xp-filedlg-empty {
+  padding: 8px;
+  color: var(--disabled-fg);
+}
+.xp-filedlg-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.xp-filedlg-where {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 21px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.xp-filedlg-up {
+  flex: 0 0 auto;
+  min-width: 0;
+  height: 21px;
+  padding: 0 8px;
+}

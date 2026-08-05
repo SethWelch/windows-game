@@ -1,0 +1,412 @@
+/* AIM was a Win32 program that wanted to be a brand: standard grey chrome, then
+   AOL's yellow and blue wherever it could get away with it. */
+
+.xp-aim,
+.xp-aim-im {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ---- Sign On ---- */
+
+.xp-aim-signon {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 10px;
+  background: linear-gradient(180deg, #fdfdfb 0%, var(--face) 62%);
+  overflow: auto;
+}
+
+.xp-aim-signon-hero {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #c9c4b4;
+}
+.xp-aim-wordmark {
+  position: relative;
+  font: 15px/1.15 var(--xp-title-font);
+  color: #1a3f8f;
+}
+.xp-aim-wordmark strong {
+  display: block;
+  font-size: 21px;
+  letter-spacing: -0.5px;
+  color: #0b2d75;
+}
+/* The service mark AOL never left off. */
+.xp-aim-wordmark span {
+  position: absolute;
+  top: 14px;
+  font-size: 7px;
+  color: #6b7c9e;
+}
+
+.xp-aim-signon-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3px;
+  width: 100%;
+}
+.xp-aim-signon-form label:not(.xp-choice) {
+  margin-top: 5px;
+  font-weight: bold;
+  color: #33333a;
+}
+.xp-aim-signon-form .xp-field {
+  height: 21px;
+}
+.xp-aim-signon-form .xp-choice {
+  margin-top: 6px;
+}
+
+.xp-aim-signon-actions {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-top: auto;
+}
+.xp-aim-signon-actions .xp-button {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.xp-aim-version {
+  margin: 0;
+  color: var(--disabled-fg);
+}
+
+/* ---- Buddy list ---- */
+
+.xp-aim-tabs {
+  display: flex;
+  gap: 2px;
+  flex: 0 0 auto;
+  padding: 3px 4px 0;
+  background: var(--face);
+}
+.xp-aim-tab {
+  padding: 2px 10px 3px;
+  border: 1px solid var(--shadow);
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, #e4e0d0 0%, #d5d0be 100%);
+  color: #4a4a4a;
+}
+.xp-aim-tab[data-active] {
+  background: #fff;
+  color: #000;
+  font-weight: bold;
+}
+.xp-aim-tab[data-disabled] {
+  color: var(--disabled-fg);
+}
+
+.xp-aim-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 2px;
+  background: #fff;
+  border: 1px solid var(--field-border);
+  border-top: 0;
+  overflow: auto;
+}
+
+.xp-aim-group + .xp-aim-group {
+  margin-top: 4px;
+}
+.xp-aim-group-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 2px 3px;
+  border: 0;
+  background: #eef2f9;
+  text-align: left;
+  cursor: default;
+  font: bold var(--xp-fs) var(--xp-font);
+  color: #14418c;
+}
+.xp-aim-twisty {
+  display: inline-block;
+  font-size: 7px;
+  transition: transform 80ms linear;
+}
+.xp-aim-twisty[data-open='true'] {
+  transform: rotate(90deg);
+}
+
+.xp-aim-buddy {
+  display: block;
+  width: 100%;
+  padding: 1px 3px 1px 18px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: default;
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.xp-aim-buddy[data-selected='true'] {
+  background: var(--menu-hi);
+  color: #fff;
+}
+/* Away and idle buddies went grey and italic; offline ones were greyer still. */
+.xp-aim-buddy[data-idle='true'] {
+  font-style: italic;
+  color: #5c5c66;
+}
+.xp-aim-buddy[data-offline='true'] {
+  color: var(--disabled-fg);
+}
+.xp-aim-buddy[data-selected='true'],
+.xp-aim-buddy[data-selected='true'] .xp-aim-buddy-status {
+  color: #fff;
+}
+.xp-aim-buddy-status {
+  color: #7a7a84;
+}
+
+.xp-aim-awaybar {
+  flex: 0 0 auto;
+  padding: 3px 6px;
+  background: #fff6cf;
+  border-top: 1px solid #d8c98a;
+  color: #6a5300;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.xp-aim-footer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  padding: 4px;
+  background: var(--face);
+}
+.xp-aim-tool {
+  min-width: 0;
+  flex: 0 0 auto;
+  height: 20px;
+  padding: 0 8px;
+}
+.xp-aim-me {
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #4a4a52;
+}
+
+.xp-aim-awayform {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 290px;
+}
+.xp-aim-awaytext {
+  height: 66px;
+  resize: none;
+  font: var(--xp-fs) var(--xp-font);
+}
+
+/* ---- Instant message ---- */
+
+.xp-aim-im-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  gap: 3px;
+  padding: 4px;
+}
+
+.xp-aim-log {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 3px 5px;
+  background: #fff;
+  border: 1px solid var(--field-border);
+  overflow: auto;
+  /* AIM's message pane was a rich-text control at 12px, not the 11px UI font. */
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.xp-aim-line {
+  margin: 0 0 2px;
+  word-wrap: break-word;
+}
+.xp-aim-line--system {
+  color: #8a1f1f;
+  font-style: italic;
+}
+/* Your name in red, theirs in blue — the default that everyone remembers. */
+.xp-aim-who {
+  font-weight: bold;
+  color: #0b3f9c;
+}
+.xp-aim-who[data-mine='true'] {
+  color: #b01818;
+}
+.xp-aim-stamp {
+  color: #8a8a92;
+  font-size: 10px;
+}
+.xp-aim-said[data-auto='true'] {
+  color: #5c5c66;
+  font-style: italic;
+}
+
+.xp-aim-emoticon {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  vertical-align: -3px;
+}
+
+.xp-aim-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+  padding: 2px;
+  background: var(--face);
+  border: 1px solid;
+  border-color: #fff var(--shadow) var(--shadow) #fff;
+}
+.xp-aim-fmt {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: none;
+  cursor: default;
+  font: 12px var(--xp-font);
+  color: #000;
+}
+.xp-aim-fmt:hover {
+  border-color: #e9a927;
+  background: #fdf3d8;
+}
+.xp-aim-fmt[data-on='true'] {
+  border-color: var(--shadow) #fff #fff var(--shadow);
+  background: #dcd8c8;
+}
+.xp-aim-fmt .xp-aim-emoticon {
+  width: 16px;
+  height: 16px;
+  vertical-align: 0;
+}
+
+.xp-aim-tb-sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 2px;
+  background: var(--shadow);
+  box-shadow: 1px 0 0 #fff;
+}
+
+.xp-aim-swatch {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 1px solid var(--shadow);
+  cursor: default;
+}
+.xp-aim-swatch[data-on='true'] {
+  box-shadow: 0 0 0 2px #e9a927;
+}
+
+.xp-aim-smiley-wrap {
+  position: relative;
+}
+.xp-aim-smiley-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 30;
+  display: flex;
+  gap: 1px;
+  padding: 3px;
+  background: #fff;
+  border: 1px solid #a0a0a0;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.28);
+}
+.xp-aim-smiley-pick {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: none;
+  cursor: default;
+}
+.xp-aim-smiley-pick:hover {
+  border-color: #e9a927;
+  background: #fdf3d8;
+}
+.xp-aim-smiley-pick .xp-aim-emoticon {
+  width: 18px;
+  height: 18px;
+  vertical-align: 0;
+}
+
+.xp-aim-input {
+  flex: 0 0 62px;
+  padding: 3px 5px;
+  background: #fff;
+  border: 1px solid var(--field-border);
+  outline: 0;
+  resize: none;
+  cursor: text;
+  font-family: var(--xp-font);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.xp-aim-im-footer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  padding: 0 4px 5px;
+  background: var(--face);
+}
+.xp-aim-typing {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #5c5c66;
+  font-style: italic;
+}
+.xp-aim-im-footer .xp-button {
+  min-width: 56px;
+  height: 21px;
+}
+
+.xp-aim-empty {
+  margin: 0;
+  padding: 14px;
+  color: var(--disabled-fg);
+}

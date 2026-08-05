@@ -1,0 +1,113 @@
+.xp-menubar {
+  display: flex;
+  flex: 0 0 auto;
+  height: 20px;
+  padding: 1px 2px;
+  background: var(--face);
+  font: var(--xp-fs) var(--xp-font);
+  user-select: none;
+}
+
+.xp-menubar-root {
+  position: relative;
+}
+
+.xp-menubar-item {
+  border: 1px solid transparent;
+  background: none;
+  padding: 2px 7px;
+  cursor: default;
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+}
+.xp-menubar-item[data-open='true'] {
+  background: var(--menu-hi);
+  color: #fff;
+}
+
+/* Shared by MenuBar dropdowns and ContextMenu. */
+.xp-menu {
+  min-width: 158px;
+  padding: 2px;
+  background: #fff;
+  border: 1px solid #a0a0a0;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.28);
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+}
+.xp-menu--dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 500;
+}
+.xp-menu--floating {
+  position: fixed;
+  z-index: 900;
+}
+
+.xp-menu-item {
+  display: grid;
+  grid-template-columns: 18px 1fr auto 12px;
+  align-items: center;
+  width: 100%;
+  height: 19px;
+  /* The row is a fixed 19px, so a label that wraps overlaps the item below it.
+     Menus are absolutely positioned inside the tiny menubar button that owns
+     them, which makes their shrink-to-fit width that button's width — without
+     this every label longer than `min-width` above wrapped. `nowrap` makes
+     min-content equal max-content, so the menu widens to its longest item and
+     `min-width` is left doing its real job as a floor for short menus. */
+  white-space: nowrap;
+  padding: 0 3px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: default;
+  font: var(--xp-fs) var(--xp-font);
+  color: inherit;
+}
+.xp-menu-item:hover:not([data-disabled='true']) {
+  background: var(--menu-hi);
+  color: #fff;
+}
+.xp-menu-item[data-disabled='true'] {
+  color: var(--disabled-fg);
+  text-shadow: 1px 1px 0 #fff;
+}
+
+.xp-menu-check {
+  text-align: center;
+  font-size: 12px;
+  line-height: 1;
+}
+.xp-menu-accel {
+  padding-left: 24px;
+  color: #4a4a4a;
+}
+/* Its column is `auto`, so the padding on an accelerator-less item would widen
+   every menu by 24px it never uses. */
+.xp-menu-accel:empty {
+  padding-left: 0;
+}
+.xp-menu-item:hover:not([data-disabled='true']) .xp-menu-accel {
+  color: #fff;
+}
+.xp-menu-arrow {
+  text-align: center;
+  font-size: 8px;
+}
+
+.xp-menu-sep {
+  height: 1px;
+  margin: 3px 2px;
+  background: #d8d4c8;
+  border-bottom: 1px solid #fff;
+}
+
+.xp-menu-sub {
+  position: absolute;
+  top: -3px;
+  left: 100%;
+  z-index: 501;
+}

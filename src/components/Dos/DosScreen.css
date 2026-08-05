@@ -1,0 +1,55 @@
+/* The whole screen, not a window: there is no shell running to put one in. */
+
+.dos {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  /* Undoes the shell's arrow — this is a text console. */
+  cursor: text;
+  overflow: hidden;
+}
+
+.dos-screen {
+  width: 100%;
+  height: 100%;
+  padding: 8px 10px;
+  background: #000;
+  /* The dimmer grey of a real text mode, not white. */
+  color: #c0c0c0;
+  font: 15px/1.32 var(--xp-mono);
+  overflow: auto;
+}
+
+.dos-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 1.32em;
+}
+
+.dos-entry {
+  display: flex;
+  align-items: baseline;
+}
+.dos-prompt {
+  flex: 0 0 auto;
+  white-space: pre;
+}
+
+.dos-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  caret-color: #c0c0c0;
+}
+
+/* White on grey, the way a text mode inverted its cells. */
+.dos-screen ::selection {
+  background: #c0c0c0;
+  color: #000;
+}

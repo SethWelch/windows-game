@@ -1,0 +1,61 @@
+/* Windows XP "Luna" design tokens. Every magic hex in the project lives here. */
+:root {
+  /* Bundled first (see fonts.css) so the look never depends on what the viewer has
+     installed. System copies sit behind them as fallbacks for glyphs the subset
+     omits — Tahoma has no U+2713, for instance. */
+  --xp-font: 'XP Tahoma', Tahoma, Verdana, 'Segoe UI', sans-serif;
+  --xp-title-font: 'XP Trebuchet', 'Trebuchet MS', Tahoma, Verdana, sans-serif;
+  --xp-mono: 'Lucida Console', 'DejaVu Sans Mono', 'Courier New', monospace;
+  --xp-fs: 11px;
+
+  /* Luna surfaces */
+  --face: #ece9d8; /* 3DFace — window body, menubar, buttons */
+  --face-light: #f1efe2;
+  /* The window frame is one continuous blue panel, the way Luna's 9-slice
+     bitmaps actually worked — the caption and the side borders are the same
+     artwork. --frame-body is therefore both the border colour AND the titlebar
+     gradient's final stop, so the two meet without a seam. */
+  --frame-body: #1b5dd2;
+  --frame-edge: #093a9e; /* 1px outer outline */
+  --frame-body-inactive: #7c9ede;
+  --frame-edge-inactive: #4f76b6;
+  --shadow: #aca899; /* ButtonShadow   */
+  --dkshadow: #716f64; /* ButtonDkShadow */
+  --field-border: #7f9db9; /* XP textbox edge */
+  --menu-hi: #316ac5; /* menu / list selection */
+  --sel-blue: #0a246a; /* desktop label selection */
+  --disabled-fg: #847e70;
+
+  /* Titlebars */
+  /* Bright top rim, saturated body, a sheen through the lower third, then a hard
+     dark base. The dynamic range is what reads as "glossy" — a near-uniform blue
+     ramp looks flat no matter how many stops it has. */
+  --title-active: linear-gradient(
+    180deg,
+    #5cb0ff 0%,
+    #0f84f7 4%,
+    #0663e9 12%,
+    #0455dd 34%,
+    #0a5ee5 58%,
+    #1a7cf8 78%,
+    #1a6fee 90%,
+    #1b5dd2 100%
+  );
+  /* Same shape as the active bar, desaturated — so an unfocused window still
+     reads as the same chrome rather than a different theme. */
+  --title-inactive: linear-gradient(
+    180deg,
+    #a8c4ee 0%,
+    #7ba2e7 4%,
+    #6d95df 12%,
+    #6690da 34%,
+    #6d96de 58%,
+    #82a8e8 78%,
+    #7ba0e0 90%,
+    #7c9ede 100%
+  );
+
+  /* Metrics. Referenced from JS via os/constants.ts — keep the two in sync. */
+  --taskbar-h: 30px;
+  --titlebar-h: 30px;
+}

@@ -1,0 +1,102 @@
+/* The machine before Windows: a full-screen text mode, or nothing at all. */
+
+.boot {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+.boot-screen {
+  width: 100%;
+  height: 100%;
+  padding: 16px 20px;
+  color: #c0c0c0;
+  /* Slightly looser than the console apps: a POST screen ran at 80x25 on a CRT. */
+  font: 15px/1.5 var(--xp-mono);
+  overflow: auto;
+}
+
+.boot-line {
+  white-space: pre;
+  min-height: 1.5em;
+}
+.boot-line b {
+  color: #fff;
+}
+
+/* Vendor block on the left, power badge on the right — the corners a POST used. */
+.boot-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 1.5em;
+}
+.boot-vendor {
+  min-width: 0;
+}
+.boot-badge {
+  flex: 0 0 auto;
+  width: 150px;
+  height: 96px;
+}
+
+/* The prompt sits away from the readout, as the last thing on the screen. */
+.boot-prompt {
+  margin-top: 2em;
+}
+
+/* ---- Powered off ---- */
+
+.boot--off {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 42px;
+}
+
+/* The amber of a VGA text console, which is what that message always came up in. */
+.boot-safe {
+  margin: 0;
+  color: #ffb020;
+  font: 15px/1.45 var(--xp-mono);
+  text-align: center;
+}
+
+.boot-power {
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #2a2a2a;
+  background: radial-gradient(circle at 38% 30%, #2e2e2e 0%, #141414 60%, #0a0a0a 100%);
+  color: #4a4a4a;
+  cursor: pointer;
+  /* Fades in once the message has had time to read. */
+  opacity: 0;
+  transition:
+    opacity 500ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease;
+  pointer-events: none;
+}
+.boot-power[data-ready='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+.boot-power:hover {
+  color: #5fd0ff;
+  box-shadow: 0 0 18px rgba(95, 208, 255, 0.35);
+}
+.boot-power:active {
+  color: #8ee4ff;
+  box-shadow: 0 0 26px rgba(95, 208, 255, 0.55);
+}
+.boot-power svg {
+  width: 34px;
+  height: 34px;
+}

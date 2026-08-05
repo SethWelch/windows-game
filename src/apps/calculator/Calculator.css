@@ -1,0 +1,106 @@
+/* calc.exe kept the classic grey face and the coloured button text: memory and
+   operators in red, digits in blue, the clear group in red. The buttons stretch
+   to fill, so the window size never has to be pixel-exact. */
+
+.xp-calculator {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  user-select: none;
+}
+
+.xp-calc-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 6px;
+  background: var(--face);
+}
+
+.xp-calc-display {
+  flex: 0 0 auto;
+  padding: 2px 5px;
+  background: #fff;
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+  text-align: right;
+  overflow: hidden;
+  white-space: nowrap;
+  font: 15px/1.5 var(--xp-font);
+}
+.xp-calc-display[data-error='true'] {
+  color: #a00000;
+  font-size: 12px;
+}
+
+.xp-calc-row {
+  display: flex;
+  gap: 4px;
+}
+.xp-calc-row--top {
+  justify-content: flex-end;
+}
+
+/* The memory indicator: a sunken box that shows an M when something is stored. */
+.xp-calc-flag {
+  flex: 0 0 30px;
+  margin-right: auto;
+  display: grid;
+  place-items: center;
+  height: 22px;
+  background: var(--face);
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+  font-weight: bold;
+  color: #000080;
+}
+
+.xp-calc-keys {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  min-height: 0;
+}
+
+.xp-calc-key {
+  min-width: 0;
+  height: 100%;
+  min-height: 22px;
+  padding: 0 2px;
+  border: 1px solid #003c74;
+  border-radius: 2px;
+  cursor: default;
+  background: linear-gradient(180deg, #fff 0%, #f6f4ec 48%, #eae7d8 86%, #dcd8c8 100%);
+  font: bold var(--xp-fs) var(--xp-font);
+  /* Digits: the dark blue calc.exe used for the number pad. */
+  color: #00007a;
+}
+.xp-calc-key:hover {
+  border-color: #e9a927;
+  box-shadow: inset 0 0 5px 1px #fbd47b;
+}
+.xp-calc-key:active {
+  background: linear-gradient(180deg, #d8d4c4 0%, #e6e3d4 55%, #f2f0e6 100%);
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+.xp-calc-key[data-tone='memory'],
+.xp-calc-key[data-tone='operator'],
+.xp-calc-key[data-tone='clear'] {
+  color: #a80000;
+}
+.xp-calc-key[data-tone='clear'] {
+  flex: 0 0 42px;
+  height: 22px;
+}
+.xp-calc-key[data-wide='true'] {
+  flex: 0 0 76px;
+}
+
+.xp-calc-about {
+  max-width: 300px;
+  line-height: 1.5;
+}

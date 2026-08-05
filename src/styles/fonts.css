@@ -1,0 +1,55 @@
+/*
+ * Bundled UI fonts, so the look doesn't depend on what the viewer happens to have
+ * installed. Tahoma is XP's UI font; Trebuchet MS is its window-caption font.
+ *
+ * Subset to Latin-1 plus the punctuation and symbols the shell renders as text,
+ * taking ~1.5 MB of source TTF down to ~33 KB across all four faces. Anything
+ * outside the subset falls through to the next family in the stack (a system copy
+ * of Tahoma if present, then Verdana), so nothing renders as tofu.
+ *
+ * Regenerate with (needs `pip install fonttools brotli`):
+ *   pyftsubset "Tahoma.ttf" --flavor=woff2 --output-file=tahoma-400.woff2 \
+ *     --layout-features='' --no-hinting --desubroutinize \
+ *     --drop-tables+=GSUB,GPOS,DSIG,LTSH,VDMX,hdmx \
+ *     --unicodes="U+0020-007E,U+00A0-00FF,U+2013,U+2014,U+2018-201A,U+201C-201E,\
+ * U+2020,U+2022,U+2026,U+2030,U+2039,U+203A,U+20AC,U+2122,U+2190-2193,U+21B0,\
+ * U+21A9,U+2500,U+25B6,U+25BC,U+25BE,U+2713,U+23FB"
+ *
+ * Licensing: Tahoma and Trebuchet MS are Microsoft's, and are not licensed for
+ * redistribution. Fine for a local build; swap in a freely licensed face before
+ * publishing this anywhere public.
+ *
+ * The family names are deliberately prefixed rather than called plain "Tahoma":
+ * that keeps a system copy available as the next fallback for glyphs the subset
+ * omits, instead of shadowing it.
+ */
+
+@font-face {
+  font-family: 'XP Tahoma';
+  src: url('../fonts/tahoma-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'XP Tahoma';
+  src: url('../fonts/tahoma-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'XP Trebuchet';
+  src: url('../fonts/trebuchet-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'XP Trebuchet';
+  src: url('../fonts/trebuchet-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}

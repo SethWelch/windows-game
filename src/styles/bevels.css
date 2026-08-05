@@ -1,0 +1,180 @@
+/* Reusable XP/Win32 chrome primitives: 3D bevels, push buttons, fields. */
+
+/* 2px classic bevels via insets, so they don't consume box space. */
+.xp-raised {
+  box-shadow:
+    inset 1px 1px #fff,
+    inset -1px -1px var(--dkshadow),
+    inset 2px 2px var(--face-light),
+    inset -2px -2px var(--shadow);
+}
+.xp-sunken {
+  box-shadow:
+    inset 1px 1px var(--shadow),
+    inset -1px -1px #fff,
+    inset 2px 2px var(--dkshadow),
+    inset -2px -2px var(--face-light);
+}
+
+/* 1px flavour — the border-color trick, matching how Win32 actually drew these. */
+.xp-raised-1 {
+  border: 1px solid;
+  border-color: #fff var(--dkshadow) var(--dkshadow) #fff;
+}
+.xp-sunken-1 {
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+}
+
+/* Luna push button.
+   Flat and light: the old version stacked a white inner ring against the dark
+   border, which read as a heavy triple edge instead of a thin outline. */
+.xp-button {
+  min-width: 75px;
+  height: 22px;
+  padding: 0 12px;
+  cursor: default;
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+  border: 1px solid #003c74;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f6f4ec 48%,
+    #eae7d8 86%,
+    #dcd8c8 100%
+  );
+}
+.xp-button:hover:not([disabled]) {
+  /* XP's amber hover glow */
+  border-color: #e9a927;
+  box-shadow: inset 0 0 5px 1px #fbd47b;
+}
+.xp-button:active:not([disabled]) {
+  background: linear-gradient(180deg, #d8d4c4 0%, #e6e3d4 55%, #f2f0e6 100%);
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+.xp-button[disabled] {
+  color: var(--disabled-fg);
+  text-shadow: 1px 1px 0 #fff;
+  border-color: #a0a0a0;
+}
+.xp-button:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -4px;
+}
+/* The default button gets a thin light-blue ring INSIDE its border. An outer
+   ring instead produced a 2px dark outline nothing in XP has. */
+.xp-button--default {
+  box-shadow: inset 0 0 0 1px #96b8e2;
+}
+
+/* Fields and list boxes used a flat 1px steel border, not a classic bevel. */
+.xp-field {
+  background: #fff;
+  color: #000;
+  border: 1px solid var(--field-border);
+  padding: 2px 3px;
+  font: var(--xp-fs) var(--xp-font);
+}
+
+/* Checkboxes and radios. `appearance: none` and then drawn by hand, because the
+   native controls are the one place a browser's own platform styling leaks
+   straight through the illusion. The tick is two borders on a rotated box rather
+   than a glyph — Tahoma has no U+2713, so a character would fall back to another
+   font at a different weight. */
+.xp-check,
+.xp-radio {
+  appearance: none;
+  flex: 0 0 13px;
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--field-border);
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.12);
+}
+.xp-radio {
+  border-radius: 50%;
+}
+/* The tick is the left and bottom edges of a 7x4 box turned 45°, which puts its
+   ink across the box's full width and height — so centring the box centres the
+   tick. `translate(-50%, -50%)` uses the unrotated 7x4, and the rotation happens
+   about that same centre, so the mark lands dead centre at any size. Nudging
+   `left`/`top` by hand instead left it high and clipped at the top. */
+.xp-check:checked::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 4px;
+  border-left: 2px solid #000;
+  border-bottom: 2px solid #000;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.xp-radio:checked::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #000;
+}
+.xp-check:disabled,
+.xp-radio:disabled {
+  background: var(--face);
+  border-color: var(--shadow);
+}
+.xp-check:focus-visible,
+.xp-radio:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: 1px;
+}
+
+/* The label a checkbox or radio sits in. */
+.xp-choice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+.xp-choice[data-disabled] {
+  color: var(--disabled-fg);
+}
+
+/* Win32 group box: a 1px etched frame with the caption cut into the top edge.
+   Named `groupbox`, not `group` — Explorer already owns `.xp-group` for the
+   headed sections in its file view. */
+.xp-groupbox {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 4px 10px 8px;
+  border: 1px solid var(--shadow);
+  border-radius: 2px;
+  box-shadow: 1px 1px 0 #fff;
+}
+.xp-groupbox > legend {
+  padding: 0 4px;
+}
+
+/* Status bar cell — the faint sunken panel along the bottom of a window. */
+.xp-statusbar {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2px;
+  padding: 2px;
+  background: var(--face);
+  font: var(--xp-fs) var(--xp-font);
+  user-select: none;
+}
+.xp-statusbar-cell {
+  padding: 1px 6px;
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+  white-space: nowrap;
+  overflow: hidden;
+}

@@ -1,0 +1,388 @@
+.xp-explorer {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* The containing block for the drag ghost. It has to be an element this app
+     owns: `position: fixed` would resolve against `.xp-window`, which carries a
+     transform whenever the window isn't maximized. */
+  position: relative;
+}
+
+/* ---- menu row: menubar plus the flag badge on the right ---- */
+
+.xp-explorer-menurow {
+  display: flex;
+  align-items: stretch;
+  flex: 0 0 auto;
+  background: var(--face);
+}
+.xp-explorer-menurow > .xp-menubar {
+  flex: 1 1 auto;
+}
+/* The flag sits in its own white panel at the right end of the menu row, as in
+   XP, rather than floating on the beige menubar. `align-self: stretch` makes it
+   match the menubar's height exactly. */
+.xp-explorer-brand {
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 34px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border-left: 1px solid var(--shadow);
+  border-bottom: 1px solid var(--shadow);
+}
+
+/* ---- toolbar ---- */
+
+.xp-explorer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex: 0 0 auto;
+  padding: 3px 4px;
+  background: linear-gradient(
+    180deg,
+    #fdfdfc 0%,
+    #f6f4ea 45%,
+    #ebe7d8 92%,
+    #e2ddcb 100%
+  );
+  border-top: 1px solid #fff;
+  border-bottom: 1px solid #b9b39f;
+}
+
+.xp-tbi {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  /* Tall enough for the 29px Back/Forward circles. */
+  height: 34px;
+  padding: 0 5px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  cursor: default;
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+}
+.xp-tbi--labelled {
+  padding-right: 8px;
+}
+.xp-tbi:hover:not([disabled]) {
+  border-color: #a8c0e0;
+  background: linear-gradient(180deg, #fdfeff 0%, #dfeafb 100%);
+}
+.xp-tbi:active:not([disabled]) {
+  background: linear-gradient(180deg, #cfdff5 0%, #e8f0fb 100%);
+  border-color: #7f9fd0;
+}
+.xp-tbi[data-active='true'] {
+  border-color: #a8c0e0;
+  background: linear-gradient(180deg, #d6e4f7 0%, #eaf2fc 100%);
+}
+.xp-tbi[disabled] {
+  color: var(--disabled-fg);
+}
+/* The nav buttons ship a drawn disabled variant, so they must NOT be filtered —
+   grayscale+opacity turned them into washed-out ghosts. */
+.xp-tbi[disabled]:not(.xp-tbi--nav) svg {
+  filter: grayscale(1) opacity(0.55);
+}
+.xp-tbi-caret {
+  display: grid;
+  place-items: center;
+  width: 8px;
+  height: 100%;
+}
+.xp-tb-sep {
+  width: 1px;
+  height: 26px;
+  margin: 0 4px;
+  background: #c4bfab;
+  box-shadow: 1px 0 0 #fff;
+}
+
+/* ---- address bar ---- */
+
+.xp-explorer-addressrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 3px 5px 4px;
+  background: linear-gradient(180deg, #f2efe4 0%, #e9e5d6 100%);
+  border-bottom: 1px solid #b9b39f;
+  font: var(--xp-fs) var(--xp-font);
+}
+.xp-address {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 21px;
+  padding: 0 2px 0 3px;
+  background: #fff;
+  border: 1px solid var(--field-border);
+}
+.xp-address-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* The combo dropdown reads as its own small button, sunk into the field's right
+   edge, with the accent-blue chevron rather than a black triangle. */
+.xp-address-caret {
+  flex: 0 0 17px;
+  align-self: stretch;
+  margin: 0 -1px 0 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(
+    180deg,
+    #fdfdfa 0%,
+    #f0eee2 50%,
+    #e2ded0 88%,
+    #d6d1c0 100%
+  );
+  border-left: 1px solid #b6b09c;
+}
+.xp-go {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  height: 21px;
+  padding: 0 6px 0 2px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  cursor: default;
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+}
+.xp-go[disabled] {
+  color: #000;
+}
+/* Keep the green square full-colour even while the action is a stub. */
+.xp-go[disabled] svg {
+  filter: none;
+}
+
+/* ---- panes ---- */
+
+.xp-explorer-panes {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+}
+
+/* Left task pane: XP's blue gradient column. */
+.xp-explorer-tasks {
+  flex: 0 0 196px;
+  overflow: auto;
+  padding: 9px 7px;
+  background: linear-gradient(180deg, #7ba7e4 0%, #6d9adf 45%, #5f8ed9 100%);
+}
+
+.xp-pane {
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 11px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
+}
+.xp-pane-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 6px 4px 9px;
+  border: 0;
+  cursor: default;
+  text-align: left;
+  font: bold var(--xp-fs) var(--xp-font);
+  color: #12386f;
+  background: linear-gradient(
+    180deg,
+    #f4f8fe 0%,
+    #dfeafa 45%,
+    #c9dcf6 92%,
+    #bed4f3 100%
+  );
+}
+.xp-pane-header > span:first-child {
+  flex: 1 1 auto;
+}
+.xp-pane-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 9px 10px;
+  background: #f6fafe;
+}
+
+.xp-pane-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  cursor: default;
+  font: var(--xp-fs) var(--xp-font);
+  color: #14487d;
+}
+.xp-pane-link:hover:not([disabled]) {
+  color: #d1590a;
+  text-decoration: underline;
+}
+.xp-pane-link[disabled] {
+  color: #5a7fa8;
+}
+.xp-pane-link-icon {
+  flex: 0 0 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+}
+.xp-pane-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #333;
+}
+
+/* ---- content view ---- */
+
+.xp-explorer-view {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: auto;
+  padding: 10px 12px;
+  background: #fff;
+}
+.xp-explorer-empty {
+  margin: 2px;
+  color: var(--disabled-fg);
+}
+
+.xp-group + .xp-group {
+  margin-top: 14px;
+}
+.xp-group-heading {
+  font: bold var(--xp-fs) var(--xp-font);
+  color: #12386f;
+  margin-bottom: 2px;
+}
+.xp-group-rule {
+  height: 1px;
+  margin-bottom: 9px;
+  background: linear-gradient(90deg, #a8c4e6 0%, #dce8f6 60%, #fff 100%);
+}
+
+/* Tiles view: 48px icon with the label beside it, two per row. */
+.xp-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+.xp-tile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(50% - 12px);
+  min-width: 150px;
+  padding: 4px;
+  border: 1px solid transparent;
+  cursor: default;
+  user-select: none;
+}
+.xp-tile:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -2px;
+}
+.xp-tile[data-selected='true'] .xp-tile-label {
+  background: var(--menu-hi);
+  color: #fff;
+}
+.xp-tile[data-selected='true'] .xp-tile-icon::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: #316ac5;
+  opacity: 0.38;
+  border-radius: 2px;
+  pointer-events: none;
+}
+/* A cut item is dimmed until the paste lands, as in XP. */
+.xp-tile[data-cut='true'] {
+  opacity: 0.45;
+}
+
+/* The tile a drag is over, when it would accept the drop. Written straight to the
+   DOM during the gesture rather than held in state — see os/dnd.ts. */
+.xp-tile[data-drop-hover='true'] {
+  border-color: var(--menu-hi);
+  background: #e8f0fb;
+}
+
+/* What you're carrying. Semi-transparent, like every shell drag image. */
+.xp-tile-ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 200px;
+  padding: 4px;
+  pointer-events: none;
+  opacity: 0.65;
+  /* Its own compositing layer, so following the pointer doesn't repaint the view
+     underneath it. */
+  will-change: transform;
+}
+.xp-tile-ghost .xp-tile-label {
+  background: var(--menu-hi);
+  color: #fff;
+}
+
+.xp-tile-icon {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+}
+.xp-tile-label {
+  padding: 1px 3px;
+  overflow-wrap: anywhere;
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+}
+.xp-tile-edit {
+  width: 100%;
+  min-width: 0;
+  padding: 0 1px;
+  border: 1px solid #000;
+  background: #fff;
+  font: var(--xp-fs) var(--xp-font);
+  outline: none;
+  cursor: text;
+}
+
+/* ---- status bar ---- */
+
+.xp-explorer-count {
+  min-width: 150px;
+}
+.xp-explorer-zone {
+  flex: 1 1 auto;
+}

@@ -1,0 +1,86 @@
+@import './fonts.css';
+@import './tokens.css';
+@import './bevels.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  font: var(--xp-fs) / 1.35 var(--xp-font);
+  color: #000;
+  /* XP's arrow everywhere; only Notepad's textarea opts back into an I-beam. */
+  cursor: default;
+  font-synthesis: none;
+  /* XP drew UI text through GDI with hard pixel edges. Browsers anti-alias by
+     default, which reads as far too smooth and modern — `none` turns it off and
+     restores the stair-stepped look, which is especially visible on titlebars. */
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+textarea {
+  font-family: inherit;
+}
+
+/* XP scrollbars. Chromium/Safari get the full treatment; Firefox falls back to
+   scrollbar-color, which at least keeps the beige/grey palette. */
+* {
+  scrollbar-color: #d6d2c2 #f1efe2;
+}
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+::-webkit-scrollbar-track {
+  background: #f1efe2;
+  box-shadow: inset 1px 0 0 #fff;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    90deg,
+    #fff 0%,
+    #eceada 22%,
+    #dcd8c6 70%,
+    #cfcab6 100%
+  );
+  border: 1px solid #a0a0a0;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  filter: brightness(1.05);
+}
+::-webkit-scrollbar-corner {
+  background: #f1efe2;
+}
+
+::selection {
+  background: var(--menu-hi);
+  color: #fff;
+}
+
+/* Shortcut badge. The artwork is a full 32x32 canvas with the badge already in
+   its bottom-left corner and the rest transparent — the way Windows ships
+   overlay icons — so it composites over the base icon at inset:0 rather than
+   being nudged into a corner. Hosts set position:relative. */
+.xp-shortcut-badge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}

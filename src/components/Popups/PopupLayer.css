@@ -1,0 +1,1190 @@
+/* Advertisements. Four frames and twenty bodies, none of which agree on anything —
+   which is the point: a screen full of these never looked like one program made them.
+
+   Frames are `[data-chrome]`, contents are `[data-kind]`. */
+
+.ad-layer {
+  position: absolute;
+  inset: 0;
+  /* Above the windows (z-index 1), below the taskbar (10) — the Start button has to
+     stay reachable no matter how many of these are up. */
+  z-index: 5;
+  /* Never swallows a click meant for the desktop; the ads opt back in below. */
+  pointer-events: none;
+}
+
+.ad {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  background: #fff;
+  border: 1px solid #0a246a;
+  box-shadow: 3px 3px 9px rgba(0, 0, 0, 0.45);
+  font: 12px/1.35 var(--xp-font);
+  color: #101010;
+  overflow: hidden;
+}
+.ad[data-chrome='none'] {
+  border-color: #303030;
+}
+
+/* ---- Frame: system dialog ---- */
+
+.ad-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  height: 22px;
+  padding: 0 3px 0 7px;
+  background: var(--title-active);
+  color: #fff;
+  font: bold 12px var(--xp-title-font);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+.ad-bar-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ad-x {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 17px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border: 1px solid #f6e2da;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #f0916f 0%, #e05023 42%, #b2350f 86%);
+  color: #fff;
+  font: bold 9px/1 var(--xp-font);
+}
+.ad-x:hover {
+  filter: brightness(1.14);
+}
+
+/* ---- Frame: bare browser strip ---- */
+
+.ad-thinbar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  height: 15px;
+  padding: 0 2px 0 4px;
+  background: linear-gradient(180deg, #3f7fd8 0%, #1a4f9e 100%);
+  color: #e8f0ff;
+  font: 9px/1 var(--xp-font);
+}
+.ad-thinbar-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ad-boxes {
+  display: flex;
+  gap: 1px;
+}
+.ad-boxes i {
+  display: block;
+  width: 11px;
+  height: 10px;
+  background: var(--face);
+  border: 1px outset #fff;
+}
+.ad-boxes i[data-close] {
+  background: #e05023;
+  cursor: pointer;
+}
+
+/* ---- Frame: a whole browser ---- */
+
+.ad-bar--ie {
+  height: 20px;
+  font-size: 11px;
+}
+.ad-ie-buttons {
+  display: flex;
+  gap: 2px;
+}
+.ad-ie-buttons i {
+  display: block;
+  width: 17px;
+  height: 16px;
+  border: 1px solid #dce9fb;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #6ba7f2 0%, #3f83e4 45%, #1c5bc4 88%);
+}
+
+.ad-ie-menus,
+.ad-ie-tools,
+.ad-ie-address {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  background: var(--face);
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+}
+.ad-ie-menus {
+  gap: 9px;
+  height: 18px;
+  padding: 0 7px;
+}
+.ad-ie-tools {
+  gap: 6px;
+  height: 24px;
+  padding: 0 7px;
+  border-top: 1px solid #fff;
+  color: #2a5aa8;
+  font-size: 13px;
+}
+.ad-ie-stop {
+  color: #c02020;
+}
+.ad-ie-address {
+  gap: 5px;
+  height: 21px;
+  padding: 0 5px 0 7px;
+  border-top: 1px solid #fff;
+  border-bottom: 1px solid var(--shadow);
+}
+.ad-ie-address > label {
+  flex: 0 0 auto;
+  color: #4a4a4a;
+}
+.ad-ie-url {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 17px;
+  padding: 1px 4px;
+  background: #fff;
+  border: 1px solid var(--field-border);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 15px;
+}
+.ad-ie-go {
+  flex: 0 0 auto;
+  padding: 0 6px;
+  color: #14418c;
+}
+.ad-ie-status {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  height: 18px;
+  padding: 1px 6px;
+  background: var(--face);
+  border-top: 1px solid var(--shadow);
+  box-shadow: inset 0 1px 0 #fff;
+  font: var(--xp-fs) var(--xp-font);
+  color: #303030;
+}
+.ad-ie-zone {
+  color: #4a4a4a;
+}
+
+/* The search column that installed itself and could not be uninstalled. */
+.ad-sidebar {
+  flex: 0 0 108px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 3px;
+  background: #eef3fb;
+  border-right: 1px solid #8a9ab8;
+  font-size: 10px;
+}
+.ad-sidebar-head {
+  font: italic bold 13px var(--xp-font);
+  color: #d81020;
+}
+.ad-sidebar-form {
+  display: flex;
+  gap: 2px;
+}
+.ad-sidebar-form input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 17px;
+  border: 1px solid var(--field-border);
+  font: 10px var(--xp-font);
+}
+.ad-sidebar-form button {
+  flex: 0 0 auto;
+  cursor: pointer;
+  border: 1px outset #fff;
+  background: var(--face);
+  font: 10px var(--xp-font);
+}
+.ad-sidebar-links {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: #0000ee;
+  text-decoration: underline;
+}
+
+/* ---- Body shell ---- */
+
+.ad-body {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+.ad-body > * {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+.ad-row-center {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+/* Borrows the shell's push button, so the imitation holds up. */
+.ad-sysbutton {
+  min-width: 76px;
+  height: 22px;
+  padding: 0 12px;
+  cursor: pointer;
+  border: 1px solid #003c74;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #fff 0%, #f6f4ec 48%, #eae7d8 86%, #dcd8c8 100%);
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+}
+.ad-sysbutton:hover {
+  border-color: #e9a927;
+  box-shadow: inset 0 0 5px 1px #fbd47b;
+}
+
+/* ---- dialog / installed ---- */
+
+.ad[data-kind='dialog'],
+.ad[data-kind='installed'],
+.ad[data-kind='progress'] {
+  background: var(--face);
+}
+.ad-dialog,
+.ad-installed,
+.ad-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 10px;
+}
+.ad-dialog-top,
+.ad-installed-top {
+  display: flex;
+  gap: 13px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.ad-glyph {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+}
+.ad-dialog-text,
+.ad-installed-top p {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  line-height: 1.45;
+}
+.ad-inline-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: #0000ee;
+  font: inherit;
+  text-decoration: underline;
+}
+
+/* ---- pitch ---- */
+
+.ad-pitch {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 9px 11px 11px;
+  text-align: center;
+  /* The banded ground every one of these seemed to have. */
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 214, 0, 0.16) 0 6px,
+      transparent 6px 12px
+    ),
+    #fffbe6;
+  font-family: 'Comic Sans MS', 'Trebuchet MS', var(--xp-font);
+}
+.ad-headline {
+  margin: 0;
+  color: #c00000;
+  font-size: 14px;
+  font-weight: bold;
+}
+.ad-text {
+  margin: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  color: #303030;
+}
+.ad-cta {
+  align-self: center;
+  padding: 4px 16px;
+  cursor: pointer;
+  border: 2px outset #7ee07e;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #b6ff7a 0%, #4fc020 60%, #2d8a10 100%);
+  color: #06330a;
+  font: bold 13px 'Comic Sans MS', 'Trebuchet MS', var(--xp-font);
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.4);
+  animation: ad-pulse 1.1s ease-in-out infinite alternate;
+}
+@keyframes ad-pulse {
+  to {
+    transform: scale(1.06);
+  }
+}
+
+/* ---- words ---- */
+
+.ad-words {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 2px 6px;
+  padding: 8px 10px;
+  text-align: center;
+  font-family: Impact, 'Arial Black', 'Trebuchet MS', var(--xp-font);
+  letter-spacing: 0.3px;
+}
+.ad-word {
+  padding: 0 2px;
+  font-size: 15px;
+  line-height: 1.15;
+}
+.ad-word[data-big='true'] {
+  font-size: 22px;
+}
+
+/* ---- tiles ---- */
+
+.ad-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 9px 11px 11px;
+  background: #f4f7fe;
+}
+.ad-tiles-lead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 5px;
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.ad-tiles-lead .ad-word {
+  font-family: inherit;
+  font-size: 13px;
+}
+.ad-tiles-lead .ad-word[data-big='true'] {
+  font-size: 19px;
+  font-weight: bold;
+}
+.ad-tiles-row {
+  display: flex;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.ad-tile {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0;
+  cursor: pointer;
+  border: 1px solid #8a9ab8;
+  background: #fff;
+  font: 10px var(--xp-font);
+  color: #14418c;
+}
+/* Where the picture would have been, if it had ever arrived. */
+.ad-tile-art {
+  flex: 1 1 auto;
+  min-height: 22px;
+  background: repeating-linear-gradient(45deg, #7fb2ea 0 6px, #a8cdf4 6px 12px);
+}
+.ad-tile-caption {
+  flex: 0 0 auto;
+  padding: 1px 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- serif ---- */
+
+.ad-serif {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 15px 13px;
+  background: #fffef8;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.ad-serif-headline {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.15;
+}
+.ad-serif-body {
+  margin: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #303030;
+}
+.ad-serif-link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: #0000ee;
+  font: italic 14px Georgia, 'Times New Roman', serif;
+  text-decoration: underline;
+}
+
+/* ---- certificate ---- */
+
+.ad-cert {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 8px 4px;
+  background: #ffe86a;
+  text-align: center;
+}
+.ad-cert-headline {
+  margin: 0;
+  color: #e00018;
+  font: bold 30px/1 Impact, 'Arial Black', var(--xp-font);
+  letter-spacing: -0.5px;
+  -webkit-text-stroke: 1px #7d000d;
+}
+/* The row of lamps around the panel, which every one of these had. */
+.ad-cert-panel {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 8px;
+  min-height: 0;
+  margin: 5px 0 2px;
+  padding: 8px;
+  background: #fff;
+  border: 3px dotted #e00018;
+  text-align: left;
+}
+.ad-cert-copy {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.ad-cert-lead {
+  margin: 0;
+  font: bold 13px var(--xp-font);
+}
+.ad-cert-specs {
+  flex: 1 1 auto;
+  margin: 0;
+  padding-left: 15px;
+  min-height: 0;
+  overflow: hidden;
+  font-size: 11px;
+  color: #303030;
+}
+.ad-cert-specs li::marker {
+  color: #e0a000;
+}
+.ad-cert-link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: #0000ee;
+  font: 12px var(--xp-font);
+  text-decoration: underline;
+}
+/* The product shot: a beige box, which is what most of them were. */
+.ad-cert-art {
+  position: relative;
+  flex: 0 0 104px;
+  display: flex;
+  align-items: center;
+}
+.ad-cert-flash {
+  position: absolute;
+  left: -14px;
+  top: -6px;
+  padding: 6px 4px;
+  background: #e00018;
+  color: #fff;
+  font: bold 11px/1 'Arial Black', Impact, var(--xp-font);
+  transform: rotate(-16deg);
+}
+.ad-cert-small {
+  flex: 0 0 auto;
+  margin: 0;
+  text-align: right;
+  font-size: 9px;
+  color: #6a5a00;
+}
+
+/* ---- exit ---- */
+
+.ad-exit {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 11px 13px 12px;
+  background: linear-gradient(180deg, #eaf3ff 0%, #fff 60%);
+}
+.ad-exit-lead {
+  margin: 0;
+  font: italic bold 15px Georgia, 'Times New Roman', serif;
+  color: #14418c;
+}
+.ad-exit-ticks {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  margin: 0;
+  /* Clear on the right of .ad-exit-art, parked in the bottom-right corner. */
+  padding: 0 88px 0 0;
+  list-style: none;
+  font-size: 11px;
+}
+.ad-exit-ticks li {
+  padding-left: 17px;
+  margin-bottom: 3px;
+  /* A green tick drawn with two borders, so it needs no artwork. */
+  position: relative;
+}
+.ad-exit-ticks li::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 6px;
+  height: 3px;
+  border-left: 2px solid #0a8f2a;
+  border-bottom: 2px solid #0a8f2a;
+  transform: rotate(-45deg);
+}
+.ad-exit-cta {
+  padding: 4px 14px;
+  cursor: pointer;
+  border: 1px solid #0a5a14;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #7ae04a 0%, #2d8a10 100%);
+  color: #fff;
+  font: bold 12px var(--xp-font);
+}
+.ad-exit-flash {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  padding: 3px 6px;
+  background: #ffd21a;
+  border: 1px solid #a07c00;
+  font: bold 9px/1.2 var(--xp-font);
+  color: #4a3800;
+  max-width: 74px;
+  text-align: center;
+}
+
+/* ---- teasers ---- */
+
+.ad-teasers {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 10px 10px;
+  background: #fffde8;
+}
+.ad-teasers-head {
+  margin: 0;
+  font: bold 11px var(--xp-font);
+  color: #b00018;
+  letter-spacing: 0.4px;
+}
+.ad-teasers ul {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ad-teasers li {
+  padding-left: 13px;
+  position: relative;
+  margin-bottom: 3px;
+}
+/* The little arrow bullet, in the era's favourite orange. */
+.ad-teasers li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #e07000;
+}
+.ad-teasers button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font: 11px var(--xp-font);
+  color: #0000c0;
+}
+.ad-teasers button:hover {
+  text-decoration: underline;
+}
+
+/* ---- price ---- */
+
+.ad-price {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 10px 6px;
+  background: #fff;
+  text-align: center;
+}
+.ad-price-art {
+  flex: 1 1 auto;
+  display: block;
+  width: 100%;
+  min-height: 34px;
+  padding: 2px;
+  background: repeating-linear-gradient(90deg, #f2f0e8 0 8px, #e6e2d6 8px 16px);
+  border: 1px solid #bdb8a8;
+}
+.ad-price-name {
+  margin: 0;
+  font: bold 12px var(--xp-font);
+}
+.ad-price-was {
+  margin: 0;
+  font-size: 10px;
+  color: #606060;
+}
+.ad-price-now {
+  margin: 0;
+  cursor: pointer;
+  font: bold 30px/1 Impact, 'Arial Black', var(--xp-font);
+  color: #d81020;
+}
+
+/* ---- form ---- */
+
+.ad-form {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 9px 11px 11px;
+  background: #d81020;
+}
+.ad-form-head {
+  margin: 0;
+  color: #fff;
+  font: bold 14px 'Arial Black', Impact, var(--xp-font);
+  text-align: center;
+}
+.ad-form-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font: bold 11px var(--xp-font);
+}
+.ad-form-row > span {
+  flex: 0 0 78px;
+}
+.ad-form-row input,
+.ad-form-row select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 19px;
+  border: 1px solid #7d0009;
+  background: #ffffd8;
+  font: 11px var(--xp-font);
+}
+.ad-form-cta {
+  margin-top: auto;
+  padding: 5px;
+  cursor: pointer;
+  border: 2px outset #9fe86a;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #b6ff7a 0%, #3faf14 100%);
+  color: #05330a;
+  font: bold 13px var(--xp-font);
+}
+
+/* ---- security ---- */
+
+.ad-security {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  background: #eef3fb;
+}
+.ad-security-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.ad-security-head p {
+  margin: 0;
+  font: bold 15px var(--xp-font);
+  color: #b00018;
+}
+.ad-security-body {
+  margin: 0;
+  font-size: 11px;
+  color: #202020;
+}
+.ad-security-table {
+  flex: 1 1 auto;
+  min-height: 0;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.ad-security-table th,
+.ad-security-table td {
+  padding: 2px 6px;
+  border: 1px solid #a8b6cc;
+  text-align: left;
+}
+.ad-security-table th {
+  width: 92px;
+  background: #ffffd8;
+  font-weight: normal;
+}
+.ad-security-table td {
+  background: #ffe8e8;
+}
+
+/* ---- radio ---- */
+
+.ad-radio {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 11px 11px;
+  background: var(--face);
+}
+.ad-radio-head {
+  margin: 0;
+  font-weight: bold;
+}
+.ad-radio-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ad-radio-list label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.ad-radio-cta {
+  align-self: flex-end;
+}
+
+/* ---- quiz ---- */
+
+.ad-quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 13px 12px;
+  background: linear-gradient(180deg, #fff3fb 0%, #ffe0f2 100%);
+}
+.ad-quiz-question {
+  margin: 0;
+  font: bold 14px 'Trebuchet MS', var(--xp-font);
+  color: #a0006a;
+}
+.ad-quiz-answers {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ad-quiz-answers button {
+  padding: 4px 8px;
+  cursor: pointer;
+  border: 1px solid #c060a0;
+  border-radius: 2px;
+  background: #fff;
+  text-align: left;
+  font: 12px var(--xp-font);
+  color: #500038;
+}
+.ad-quiz-answers button:hover {
+  background: #ffe8f6;
+}
+
+/* ---- strip: the 468x60 banner ---- */
+
+.ad-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  background: linear-gradient(90deg, #0018a8 0%, #4a00b0 100%);
+}
+.ad-strip-words {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1px 6px;
+  min-width: 0;
+  font-family: Impact, 'Arial Black', var(--xp-font);
+}
+.ad-strip-cta {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  cursor: pointer;
+  border: 2px outset #ffe86a;
+  background: #ffd21a;
+  font: bold 12px 'Arial Black', Impact, var(--xp-font);
+  color: #4a3800;
+  animation: ad-pulse 800ms ease-in-out infinite alternate;
+}
+
+/* ---- counter ---- */
+
+.ad-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 11px;
+  background: #101010;
+  text-align: center;
+}
+.ad-counter-lead {
+  margin: 0;
+  color: #00ff66;
+  font: bold 10px var(--xp-font);
+  letter-spacing: 0.6px;
+}
+.ad-counter-digits {
+  display: flex;
+  gap: 2px;
+}
+.ad-counter-digits i {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 24px;
+  background: #1e1e1e;
+  border: 1px solid #4a4a4a;
+  color: #fff;
+  font: bold 15px/1 var(--xp-mono);
+  font-style: normal;
+}
+.ad-counter-trail {
+  margin: 0;
+  color: #8a8a8a;
+  font-size: 10px;
+}
+
+/* ---- progress ---- */
+
+.ad-progress-head {
+  margin: 0;
+  font-weight: bold;
+}
+/* Marches forever, because it was never measuring anything. */
+.ad-progress-track {
+  display: block;
+  height: 16px;
+  padding: 1px;
+  background: #fff;
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+  overflow: hidden;
+}
+.ad-progress-track i {
+  display: block;
+  width: 34%;
+  height: 100%;
+  background: repeating-linear-gradient(90deg, #2f6fd0 0 9px, transparent 9px 12px);
+  animation: ad-march 1.4s linear infinite;
+}
+@keyframes ad-march {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+.ad-progress-note {
+  margin: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  color: #505050;
+  font-size: 11px;
+}
+
+/* ---- disclaimer ---- */
+
+.ad-disclaimer {
+  padding: 8px 12px;
+  background: #0a2a6a;
+  color: #c8d8f8;
+  font-size: 10px;
+  line-height: 1.4;
+  overflow: hidden;
+}
+
+/* ---- links ---- */
+
+.ad-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px 10px;
+  background: #fff;
+}
+.ad-links-head {
+  margin: 0;
+  font: bold 10px var(--xp-font);
+  color: #606060;
+  letter-spacing: 0.4px;
+}
+.ad-links-item {
+  display: flex;
+  flex-direction: column;
+}
+.ad-links-item button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font: 12px var(--xp-font);
+  color: #0000c0;
+  text-decoration: underline;
+}
+.ad-links-item span {
+  font-size: 10px;
+  color: #3a8a3a;
+}
+
+/* ---- photo ---- */
+
+.ad-photo {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+/* The drawn subject, over the studio backdrop these were always shot against. */
+.ad-photo-art {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 6px 26px;
+  background: radial-gradient(circle at 50% 30%, #a8d8f8 0%, #2f6fd0 78%, #14418c 100%);
+}
+.ad-photo-caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 1px 5px;
+  padding: 6px;
+  background: rgba(10, 10, 40, 0.72);
+  font-family: Impact, 'Arial Black', var(--xp-font);
+}
+
+/* ---- Artwork ----
+   Every illustration is one <svg> with the same 100x68 viewBox, so a single rule
+   sizes all of them and each slot below only has to say how much room it gets. */
+
+.ad-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+}
+
+.ad-pitch[data-art] {
+  padding-top: 7px;
+}
+.ad-pitch-art {
+  flex: 1 1 auto;
+  min-height: 40px;
+  align-self: center;
+  width: 74%;
+}
+
+.ad-serif-art {
+  flex: 0 0 56px;
+  align-self: center;
+  width: 58%;
+}
+
+.ad-exit-art {
+  position: absolute;
+  right: 8px;
+  bottom: 34px;
+  width: 84px;
+  height: 58px;
+  /* Tucked into the corner the ticks don't reach, as the product shot always was. */
+  pointer-events: none;
+}
+
+.ad-form-art {
+  flex: 0 0 44px;
+  align-self: center;
+  width: 44%;
+}
+
+.ad-radio-art {
+  flex: 0 0 48px;
+  align-self: center;
+  width: 40%;
+}
+
+/* ---- The house mark ----
+   A logo and a company nobody had heard of, along the bottom of the ad. */
+
+.ad-brandstrip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 6px;
+  border-top: 1px solid #b8b8b8;
+  background: linear-gradient(180deg, #f4f4f4 0%, #dcdcdc 100%);
+  overflow: hidden;
+}
+.ad-mark {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+}
+.ad-brandstrip-name {
+  flex: 0 0 auto;
+  font: bold 10px var(--xp-font);
+  letter-spacing: 0.6px;
+  color: #14418c;
+  white-space: nowrap;
+}
+.ad-brandstrip-tag {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+  font-size: 9px;
+  font-style: italic;
+  color: #8a8a8a;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* ---- The starburst ---- */
+
+.ad-badge {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  /* Square, and inside the edge: `.ad` clips its overflow, so a starburst hanging
+     over the border would simply lose half of itself. */
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: #e01020;
+  color: #fff;
+  font: bold 9px/1.1 'Arial Black', Impact, var(--xp-font);
+  text-align: center;
+  transform: rotate(-9deg);
+  /* Twelve points, cut with a polygon so it needs no artwork. */
+  clip-path: polygon(
+    50% 0%,
+    61% 12%,
+    76% 6%,
+    79% 22%,
+    95% 25%,
+    88% 39%,
+    100% 50%,
+    88% 61%,
+    95% 75%,
+    79% 78%,
+    76% 94%,
+    61% 88%,
+    50% 100%,
+    39% 88%,
+    24% 94%,
+    21% 78%,
+    5% 75%,
+    12% 61%,
+    0% 50%,
+    12% 39%,
+    5% 25%,
+    21% 22%,
+    24% 6%,
+    39% 12%
+  );
+  pointer-events: none;
+}

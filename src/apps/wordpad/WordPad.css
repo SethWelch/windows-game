@@ -1,0 +1,272 @@
+/* WordPad: two bars, a ruler, and a white page. Prefixed `wp-` rather than `xp-`
+   because none of it is shared — the shell's own chrome lives under `xp-`. */
+
+.wp-wordpad {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  user-select: none;
+}
+
+/* ---- Bars ---- */
+
+.wp-bar {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex: 0 0 auto;
+  padding: 2px 4px;
+  background: var(--face);
+  box-shadow: inset 0 1px 0 #fff;
+  border-bottom: 1px solid var(--shadow);
+}
+.wp-formatbar {
+  gap: 2px;
+}
+
+.wp-tool {
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 22px;
+  padding: 0;
+  cursor: default;
+  background: none;
+  border: 1px solid transparent;
+  color: #000;
+  font: var(--xp-fs) var(--xp-font);
+}
+.wp-tool:hover:not([disabled]) {
+  /* The hot border WordPad's flat toolbar buttons raised on hover. */
+  border-color: #fff var(--shadow) var(--shadow) #fff;
+}
+.wp-tool:active:not([disabled]),
+.wp-tool[data-on='true'] {
+  border-color: var(--shadow) #fff #fff var(--shadow);
+  background: var(--face-light);
+}
+.wp-tool[disabled] .wp-icon {
+  opacity: 0.4;
+}
+.wp-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.wp-sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 3px;
+  background: var(--shadow);
+  box-shadow: 1px 0 0 #fff;
+}
+
+.wp-mark {
+  font-size: 13px;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.wp-font,
+.wp-size {
+  height: 20px;
+  font: var(--xp-fs) var(--xp-font);
+}
+.wp-font {
+  width: 122px;
+}
+.wp-size {
+  width: 48px;
+}
+
+/* Alignment buttons: three stacked rules, ragged on the side that isn't flush. */
+.wp-align,
+.wp-bullets {
+  gap: 2px;
+  align-content: center;
+}
+.wp-align > span {
+  display: block;
+  width: 13px;
+  height: 2px;
+  background: #000;
+}
+.wp-align > span:nth-child(2) {
+  width: 8px;
+}
+.wp-align[data-align='center'] > span:nth-child(2) {
+  margin: 0 auto;
+}
+.wp-align[data-align='right'] > span:nth-child(2) {
+  margin-left: auto;
+}
+
+.wp-bullets > span {
+  display: block;
+  width: 13px;
+  height: 2px;
+  background: #000;
+  /* The dot sits to the left of each rule. */
+  box-shadow: -5px 0 0 0 #000;
+}
+
+/* ---- Colour dropdown ---- */
+
+.wp-colorwrap {
+  position: relative;
+  display: flex;
+}
+.wp-colormenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(4, 16px);
+  gap: 1px;
+  padding: 3px;
+  background: var(--face);
+  border: 1px solid #a0a0a0;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.28);
+}
+.wp-colorpick {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  cursor: default;
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+}
+
+/* ---- Ruler ----
+   96px to the inch, which is what the browser calls one. */
+
+.wp-ruler {
+  position: relative;
+  flex: 0 0 auto;
+  height: 18px;
+  padding: 0 12px;
+  background: var(--face);
+  border-bottom: 1px solid var(--shadow);
+}
+.wp-ruler-ticks {
+  position: relative;
+  height: 100%;
+  background:
+    /* the inch marks */
+    repeating-linear-gradient(
+      90deg,
+      var(--dkshadow) 0 1px,
+      transparent 1px 96px
+    ),
+    /* and the eighths between them */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 11px,
+      var(--shadow) 11px 12px
+    );
+  background-position: 0 0;
+  background-size:
+    96px 100%,
+    12px 40%;
+  background-repeat: repeat-x;
+  border-left: 1px solid var(--dkshadow);
+}
+.wp-ruler-inch {
+  position: absolute;
+  top: 2px;
+  font: 9px var(--xp-font);
+  color: #4a4a4a;
+}
+.wp-ruler-inch:nth-child(1) {
+  left: 92px;
+}
+.wp-ruler-inch:nth-child(2) {
+  left: 188px;
+}
+.wp-ruler-inch:nth-child(3) {
+  left: 284px;
+}
+.wp-ruler-inch:nth-child(4) {
+  left: 380px;
+}
+.wp-ruler-inch:nth-child(5) {
+  left: 476px;
+}
+.wp-ruler-inch:nth-child(6) {
+  left: 572px;
+}
+.wp-ruler-inch:nth-child(7) {
+  left: 668px;
+}
+
+/* The indent markers, which is what the ruler was really for. */
+.wp-ruler-marker {
+  position: absolute;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 6px solid var(--dkshadow);
+}
+.wp-ruler-marker--left {
+  left: 9px;
+}
+.wp-ruler-marker--right {
+  right: 9px;
+}
+
+/* ---- Page ---- */
+
+.wp-page {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  background: #fff;
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+  overflow: auto;
+}
+
+.wp-editor {
+  flex: 1 1 auto;
+  min-height: 100%;
+  padding: 6px 12px;
+  outline: 0;
+  /* The one region in the app that takes a caret and lets text be selected. */
+  cursor: text;
+  user-select: text;
+  /* WordPad opened on 10pt Times, and rendered at document scale rather than the
+     11px the shell's own chrome uses. */
+  font-size: 16px;
+  line-height: 1.35;
+  color: #000;
+  /* Real documents get antialiased text; the shell's hard pixel edges are for
+     chrome. */
+  -webkit-font-smoothing: antialiased;
+}
+.wp-editor ul {
+  margin: 0.3em 0;
+  padding-left: 30px;
+}
+.wp-editor p {
+  margin: 0 0 0.4em;
+}
+
+/* ---- Status bar ---- */
+
+.wp-status-hint {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.wp-status-cell {
+  flex: 0 0 90px;
+}
+
+.wp-about {
+  max-width: 300px;
+  line-height: 1.5;
+}

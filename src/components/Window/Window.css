@@ -1,0 +1,238 @@
+/* The window layer stops at the taskbar, so maximize is just `inset: 0` and the
+   drag bounds are simply this element's client box — no taskbar arithmetic
+   scattered through the JS. */
+.xp-window-layer {
+  position: absolute;
+  inset: 0 0 var(--taskbar-h) 0;
+  pointer-events: none;
+  /* Creates a stacking context, so per-window z-indexes stay scoped in here and
+     can't climb over the taskbar (10) or the Start menu (20). */
+  z-index: 1;
+}
+.xp-window-layer > * {
+  pointer-events: auto;
+}
+
+.xp-window {
+  position: absolute;
+  top: 0;
+  left: 0; /* actual position comes from transform */
+  display: flex;
+  flex-direction: column;
+  padding: 0 3px 3px;
+  /* The frame is a solid blue panel; the client area is punched into it by the
+     padding. The titlebar's gradient resolves to this same colour, so the caption
+     flows into the side borders with no seam. */
+  background: var(--frame-body);
+  border-radius: 8px 8px 0 0;
+  font: var(--xp-fs) / 1.35 var(--xp-font);
+  color: #000;
+  /* One 1px outline, not a ladder of six hand-picked hexes — the body colour now
+     comes from the background, so the shadow only has to draw the outer edge. */
+  box-shadow: inset 0 0 0 1px var(--frame-edge);
+  /* Deliberately no drop shadow: XP windows had none. Only menus and tooltips
+     did — a shadow here is the fastest way to read as Windows 7. */
+}
+
+.xp-window[data-focused='false'] {
+  background: var(--frame-body-inactive);
+  box-shadow: inset 0 0 0 1px var(--frame-edge-inactive);
+}
+
+.xp-window[data-status='maximized'] {
+  border-radius: 0;
+}
+
+.xp-window-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--face);
+}
+
+/* overflow:hidden lives HERE, below the menubar — never on .xp-window, or menu
+   dropdowns get clipped instead of spilling outside the frame like real XP. */
+.xp-window-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ---- Titlebar ---- */
+
+.xp-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  height: var(--titlebar-h);
+  /* 4px above the 22px buttons in a 30px bar, so 4px below too. The buttons need
+     visible air above them; flush to the top edge reads as a rendering bug.
+     The left/right values include +3px to offset the negative margin below. */
+  padding: 4px 8px 4px 7px;
+  /* Bleed over the window's 3px gutter so the titlebar runs edge to edge, as it
+     does in XP — the titlebar IS the frame along the top. Matching the window's
+     8px radius exactly is what removes the pale seam at the corners: a 7px curve
+     inset 3px horizontally but 0 vertically cannot nest inside an 8px one. */
+  margin: 0 -3px;
+  border-radius: 8px 8px 0 0;
+  background: var(--title-active);
+  /* The titlebar covers the window's outline along its own height, so carry the
+     1px outer edge down its sides — otherwise the outline appears to start only
+     below the caption. */
+  box-shadow:
+    inset 1px 0 0 var(--frame-edge),
+    inset -1px 0 0 var(--frame-edge);
+  font: bold 13px/1 var(--xp-title-font);
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.55);
+  user-select: none;
+  touch-action: none;
+}
+.xp-window[data-focused='false'] .xp-titlebar {
+  background: var(--title-inactive);
+  color: #e6ecf7;
+  box-shadow:
+    inset 1px 0 0 var(--frame-edge-inactive),
+    inset -1px 0 0 var(--frame-edge-inactive);
+}
+.xp-window[data-status='maximized'] .xp-titlebar {
+  border-radius: 0;
+}
+
+.xp-titlebar-icon {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+}
+
+.xp-titlebar-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xp-titlebar-buttons {
+  display: flex;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.xp-tb-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dce9fb;
+  border-radius: 3px;
+  cursor: default;
+  background:
+    /* Top-biased gloss. A 135deg corner sheen looks like a generic glass button;
+       XP's highlight sits as a band across the upper half. */
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0.1) 42%,
+      rgba(255, 255, 255, 0) 56%
+    ),
+    linear-gradient(180deg, #6ba7f2 0%, #3f83e4 45%, #1c5bc4 88%, #4c8ae8 100%);
+  box-shadow:
+    inset -1px -1px 1px rgba(0, 0, 0, 0.28),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.4);
+}
+.xp-tb-btn:hover {
+  filter: brightness(1.14) saturate(1.1);
+}
+.xp-tb-btn:active {
+  filter: brightness(0.88);
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.4);
+}
+.xp-tb-btn--close {
+  border-color: #f6e2da;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0.1) 42%,
+      rgba(255, 255, 255, 0) 56%
+    ),
+    linear-gradient(180deg, #f0916f 0%, #e05023 42%, #b2350f 86%, #d4643a 100%);
+}
+.xp-tb-btn[disabled] {
+  filter: grayscale(0.55) brightness(1.05);
+}
+.xp-window[data-focused='false'] .xp-tb-btn {
+  filter: saturate(0.55) brightness(1.05);
+}
+
+/* ---- Resize handles ---- */
+
+.xp-rh {
+  position: absolute;
+  touch-action: none;
+  user-select: none;
+  /* Above .xp-dialog-host (50), which spans the client area — otherwise a window
+     with a modal dialog open could not be resized. */
+  z-index: 60;
+}
+.xp-rh-n,
+.xp-rh-s {
+  left: 9px;
+  right: 9px;
+  height: 4px;
+  cursor: ns-resize;
+}
+.xp-rh-e,
+.xp-rh-w {
+  top: 9px;
+  bottom: 9px;
+  width: 4px;
+  cursor: ew-resize;
+}
+.xp-rh-n {
+  top: -1px;
+}
+.xp-rh-s {
+  bottom: -1px;
+}
+.xp-rh-w {
+  left: -1px;
+}
+.xp-rh-e {
+  right: -1px;
+}
+.xp-rh-nw,
+.xp-rh-ne,
+.xp-rh-sw,
+.xp-rh-se {
+  width: 10px;
+  height: 10px;
+}
+.xp-rh-nw {
+  top: -1px;
+  left: -1px;
+  cursor: nwse-resize;
+}
+.xp-rh-ne {
+  top: -1px;
+  right: -1px;
+  cursor: nesw-resize;
+}
+.xp-rh-sw {
+  bottom: -1px;
+  left: -1px;
+  cursor: nesw-resize;
+}
+.xp-rh-se {
+  bottom: -1px;
+  right: -1px;
+  cursor: nwse-resize;
+}

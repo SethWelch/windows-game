@@ -1,0 +1,113 @@
+.xp-recyclebin {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.xp-rb-panes {
+  flex: 1 1 auto;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ---- Task pane ---- */
+
+.xp-rb-tasks {
+  flex: 0 0 168px;
+  padding: 8px 6px;
+  background: linear-gradient(180deg, #7ba7e8 0%, #5b8ddb 100%);
+  overflow: auto;
+}
+.xp-rb-tasks-head {
+  padding: 4px 8px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, #f0f4fd 0%, #d8e4f8 100%);
+  font-weight: bold;
+  color: #15428b;
+}
+.xp-rb-tasks-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  border-radius: 0 0 4px 4px;
+  background: #f4f7fe;
+}
+.xp-rb-task {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: default;
+  font: var(--xp-fs) var(--xp-font);
+  color: #14418c;
+}
+.xp-rb-task:hover:not([disabled]) {
+  color: #d94f00;
+  text-decoration: underline;
+}
+.xp-rb-task[disabled] {
+  color: #8a97ab;
+}
+
+/* ---- List ---- */
+
+.xp-rb-view {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  background: #fff;
+  border-left: 1px solid var(--shadow);
+  overflow: auto;
+}
+
+.xp-rb-empty {
+  padding: 14px;
+}
+.xp-rb-empty p {
+  margin: 0 0 8px;
+}
+.xp-rb-hint {
+  max-width: 42ch;
+  color: var(--disabled-fg);
+}
+
+.xp-rb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--xp-fs) var(--xp-font);
+}
+/* Win32 list headers: a raised button face that stays put while rows scroll. */
+.xp-rb-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 2px 6px;
+  background: var(--face);
+  border-right: 1px solid var(--shadow);
+  border-bottom: 1px solid var(--shadow);
+  box-shadow: inset 1px 1px 0 #fff;
+  text-align: left;
+  font-weight: normal;
+  white-space: nowrap;
+}
+.xp-rb-table td {
+  padding: 1px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.xp-rb-table tbody tr[data-selected='true'] {
+  background: var(--menu-hi);
+  color: #fff;
+}
+.xp-rb-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.xp-rb-size {
+  text-align: right;
+}

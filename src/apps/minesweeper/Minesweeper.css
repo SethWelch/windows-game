@@ -1,0 +1,228 @@
+/* Minesweeper kept Windows 95's grey chrome right through XP — it never got the
+   Luna treatment inside its own client area. These greys are deliberately local
+   to this file rather than tokens.css: nothing else in the shell uses them.
+
+   Every metric below — cell size, the two frame widths, the panel's padding, and
+   the status panel's height and margin — is mirrored in metrics.ts, which adds
+   them up to size the window. Change one here and change it there. */
+.xp-minesweeper {
+  --ms-face: #bdbdbd;
+  --ms-light: #ffffff;
+  --ms-dark: #7b7b7b;
+
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  user-select: none;
+}
+
+/* The window is sized to this panel, so it never needs to flex. Deliberately not
+   .xp-raised — that bevel is built from the beige Luna tokens, which would put
+   XP's palette back into the one program that never wore it. */
+.xp-ms-panel {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  padding: 6px;
+  background: var(--ms-face);
+  border: 3px solid;
+  border-color: var(--ms-light) var(--ms-dark) var(--ms-dark) var(--ms-light);
+}
+
+/* ---- Status panel ---- */
+
+.xp-ms-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 33px;
+  margin-bottom: 6px;
+  padding: 0 4px;
+  /* 2px sunken, drawn as a border so it takes space and can't overlap the LEDs. */
+  border: 2px solid;
+  border-color: var(--ms-dark) var(--ms-light) var(--ms-light) var(--ms-dark);
+}
+
+.xp-ms-led {
+  display: flex;
+  gap: 1px;
+  padding: 1px;
+  background: #000;
+  border: 1px solid;
+  border-color: var(--ms-dark) var(--ms-light) var(--ms-light) var(--ms-dark);
+}
+.xp-ms-digit {
+  display: block;
+  width: 13px;
+  height: 23px;
+}
+
+.xp-ms-face {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: var(--ms-face);
+  border: 2px solid;
+  border-color: var(--ms-light) var(--ms-dark) var(--ms-dark) var(--ms-light);
+  cursor: default;
+}
+.xp-ms-face:active {
+  border-color: var(--ms-dark) var(--ms-light) var(--ms-light) var(--ms-dark);
+}
+.xp-ms-face-art {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+/* The pressed button nudges its face down-right by a pixel, like every other
+   Win32 button did. */
+.xp-ms-face:active .xp-ms-face-art {
+  transform: translate(1px, 1px);
+}
+
+/* ---- Field ---- */
+
+.xp-ms-grid {
+  display: grid;
+  grid-auto-rows: 16px;
+  border: 3px solid;
+  border-color: var(--ms-dark) var(--ms-light) var(--ms-light) var(--ms-dark);
+  background: var(--ms-face);
+  touch-action: none;
+}
+
+.xp-ms-cell {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--ms-face);
+  font: bold 12px/1 var(--xp-font);
+}
+
+/* Covered: a 2px raised bevel, with no border so the 16px pitch stays exact. */
+.xp-ms-cell[data-face='up'],
+.xp-ms-cell[data-face='flag'],
+.xp-ms-cell[data-face='mark'],
+.xp-ms-cell[data-face='wrong'] {
+  box-shadow:
+    inset 2px 2px var(--ms-light),
+    inset -2px -2px var(--ms-dark);
+}
+
+/* Uncovered — and a held-down cell, which looks identical until you let go.
+   The 1px top/left rule on every open cell is what draws the field's grid. */
+.xp-ms-cell[data-face='open'],
+.xp-ms-cell[data-face='down'],
+.xp-ms-cell[data-face='mark-down'],
+.xp-ms-cell[data-face='mine'],
+.xp-ms-cell[data-face='boom'] {
+  box-shadow:
+    inset 1px 0 var(--ms-dark),
+    inset 0 1px var(--ms-dark);
+}
+.xp-ms-cell[data-face='boom'] {
+  background: #ff0000;
+}
+
+.xp-ms-glyph {
+  display: block;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.xp-ms-mark {
+  color: #000;
+  /* Sits a hair high inside a 16px box otherwise. */
+  padding-top: 1px;
+}
+
+/* The eight canonical counts. These exact hexes are the ones people remember. */
+.xp-ms-count[data-n='1'] {
+  color: #0000ff;
+}
+.xp-ms-count[data-n='2'] {
+  color: #008000;
+}
+.xp-ms-count[data-n='3'] {
+  color: #ff0000;
+}
+.xp-ms-count[data-n='4'] {
+  color: #000080;
+}
+.xp-ms-count[data-n='5'] {
+  color: #800000;
+}
+.xp-ms-count[data-n='6'] {
+  color: #008080;
+}
+.xp-ms-count[data-n='7'] {
+  color: #000000;
+}
+.xp-ms-count[data-n='8'] {
+  color: #808080;
+}
+
+/* ---- Dialogs ---- */
+
+.xp-ms-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.xp-ms-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.xp-ms-custom-row > label {
+  flex: 0 0 48px;
+}
+.xp-ms-custom-input {
+  width: 52px;
+  height: 21px;
+}
+.xp-ms-custom-hint {
+  margin: 2px 0 0;
+  max-width: 210px;
+  color: var(--disabled-fg);
+}
+
+.xp-ms-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 260px;
+}
+.xp-ms-scores-row {
+  display: grid;
+  grid-template-columns: 92px 84px 1fr;
+  align-items: center;
+}
+.xp-ms-scores-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xp-ms-record {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 230px;
+}
+.xp-ms-record p {
+  margin: 0;
+  line-height: 1.5;
+}
+.xp-ms-record .xp-field {
+  height: 21px;
+}
+
+.xp-ms-about {
+  max-width: 300px;
+  line-height: 1.5;
+}

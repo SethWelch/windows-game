@@ -1,0 +1,39 @@
+.spam {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  user-select: none;
+}
+
+.spam-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 14px;
+  background: var(--face);
+  font: var(--xp-fs) / 1.4 var(--xp-font);
+}
+
+.spam-head {
+  margin: 0;
+  font-weight: bold;
+}
+.spam-count {
+  margin: 0;
+}
+.spam-count strong {
+  font-size: 15px;
+}
+.spam-hint {
+  margin: 0;
+  color: var(--disabled-fg);
+}
+
+.spam-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: auto;
+}

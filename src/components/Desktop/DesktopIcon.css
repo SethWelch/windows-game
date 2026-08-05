@@ -1,0 +1,95 @@
+/* Absolutely positioned on a grid rather than laid out by CSS grid, because each
+   icon now carries its own cell and has to be draggable. */
+.xp-desktop-icon {
+  position: absolute;
+  top: 0;
+  left: 0; /* actual position comes from transform */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 2px;
+  border: 1px solid transparent;
+  background: none;
+  cursor: default;
+  user-select: none;
+  touch-action: none;
+}
+.xp-desktop-icon:focus-visible {
+  outline: 1px dotted #fff;
+  outline-offset: -2px;
+}
+
+.xp-desktop-icon-art {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.45));
+}
+/* Tint the selection over our own artwork rather than trying to recolor it. */
+.xp-desktop-icon[data-selected='true'] .xp-desktop-icon-art::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: #316ac5;
+  opacity: 0.42;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.xp-desktop-icon-label {
+  font: var(--xp-fs) var(--xp-font);
+  color: #fff;
+  text-align: center;
+  max-width: 74px;
+  padding: 1px 3px;
+  line-height: 13px;
+  overflow-wrap: break-word;
+  text-shadow:
+    0 0 3px rgba(0, 0, 0, 0.9),
+    1px 1px 1px rgba(0, 0, 0, 0.85);
+}
+.xp-desktop-icon[data-selected='true'] .xp-desktop-icon-label {
+  background: var(--sel-blue);
+  text-shadow: none;
+  outline: 1px dotted #fff;
+  outline-offset: -1px;
+}
+
+/* Inline rename, as XP does on a freshly created folder. */
+.xp-desktop-icon-edit {
+  width: 72px;
+  padding: 0 1px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #000;
+  font: var(--xp-fs) var(--xp-font);
+  text-align: center;
+  outline: none;
+  cursor: text;
+}
+
+/* A cut item is dimmed until the paste lands, as in XP. */
+.xp-desktop-icon[data-cut='true'] {
+  opacity: 0.45;
+}
+
+/* The item a drag is hovering over, when it would accept the drop. Same highlight
+   as selection so it reads as "this is where it's going", set straight on the DOM
+   during the gesture — see os/dnd.ts. */
+.xp-desktop-icon[data-drop-hover='true'] .xp-desktop-icon-art::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: #316ac5;
+  opacity: 0.42;
+  border-radius: 2px;
+}
+.xp-desktop-icon[data-drop-hover='true'] .xp-desktop-icon-label {
+  background: var(--sel-blue);
+  text-shadow: none;
+  outline: 1px dotted #fff;
+  outline-offset: -1px;
+}
+
