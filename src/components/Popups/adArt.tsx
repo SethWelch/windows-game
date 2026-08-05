@@ -1,24 +1,55 @@
 /**
- * Illustrations for the advertisements: invented company marks, generic money, flat
- * stock-photo people, and the products these things were always selling.
+ * Illustrations for the advertisements, in two kinds.
  *
- * All original, and all drawn rather than photographed — this project ships no
- * bitmaps, and the imagery these ads carried in life belonged to real companies and
- * real people who mostly had no idea they were in an advertisement. The names below
- * are made up, the banknote is not any country's currency, and the faces are flat
- * vector shapes rather than anybody.
+ * The drawn set below is original vector work: invented company marks, flat
+ * stock-photo people, and the products these things were always selling. The names
+ * are made up and the faces are shapes rather than anybody. It covers the things no
+ * photograph here does — a beige tower, a printer, a mobile telephone.
+ *
+ * The photographs do the rest, and carry most of the slots. They are freely-licensed
+ * stock and arrived at up to 7418px wide, 39MB the lot; each is resized to fit 240px
+ * and reduced to a 128-colour palette with per-index alpha, which is 96KB for all ten
+ * and more resolution than a 120px slot in an ad can use.
+ *
+ * Both kinds answer to `ArtName` and both land in the same slots, so a template
+ * doesn't care which it got. See `images/SOURCES.md` for provenance.
  */
+
+import saleRibbon from './images/sale-ribbon.png'
+import wallet from './images/wallet.png'
+import cashMascot from './images/cash-mascot.png'
+import payHere from './images/pay-here.png'
+import dice from './images/dice.png'
+import creditCard from './images/credit-card.png'
+import crutches from './images/crutches.png'
+import dinosaur from './images/dinosaur.png'
+import houseCottage from './images/house-cottage.png'
+import houseShed from './images/house-shed.png'
+
+/** The photographs, by the slot they're for rather than by what they are. */
+const PHOTOS = {
+  'photo-sale': saleRibbon,
+  'photo-wallet': wallet,
+  'photo-mascot': cashMascot,
+  'photo-pay': payHere,
+  'photo-dice': dice,
+  'photo-card': creditCard,
+  'photo-crutches': crutches,
+  'photo-dinosaur': dinosaur,
+  'photo-cottage': houseCottage,
+  'photo-shed': houseShed,
+} as const
+
+export type PhotoName = keyof typeof PHOTOS
 
 export type ArtName =
   | 'desktop'
   | 'printer'
   | 'phone'
-  | 'house'
-  | 'cash'
-  | 'coins'
   | 'person'
   | 'people'
   | 'piggy'
+  | PhotoName
 
 /** Six invented emblems, so no two brand strips look related. */
 export function BrandMark({ mark }: { mark: number }) {
@@ -54,84 +85,6 @@ export function BrandMark({ mark }: { mark: number }) {
   return (
     <svg className="ad-mark" viewBox="0 0 22 22" aria-hidden>
       {emblems[mark % emblems.length]}
-    </svg>
-  )
-}
-
-/** A fan of banknotes. Deliberately not any real currency: a green rectangle, a
- *  blank oval where the portrait goes, and a number that means nothing. */
-function Cash() {
-  const note = (x: number, y: number, rotate: number) => (
-    <g transform={`rotate(${rotate} ${x + 34} ${y + 16})`}>
-      <rect x={x} y={y} width="68" height="32" rx="2" fill="#4d8c52" stroke="#2c5c31" />
-      <rect
-        x={x + 3}
-        y={y + 3}
-        width="62"
-        height="26"
-        fill="none"
-        stroke="#a8d0aa"
-        strokeDasharray="2 2"
-      />
-      <ellipse cx={x + 34} cy={y + 16} rx="10" ry="11" fill="#dcecd8" stroke="#2c5c31" />
-      <circle cx={x + 34} cy={y + 13} r="3.4" fill="#8fae8a" />
-      <path d={`M${x + 29} ${y + 24}a5 5 0 0 1 10 0z`} fill="#8fae8a" />
-      <text
-        x={x + 9}
-        y={y + 12}
-        fontFamily="Georgia, serif"
-        fontSize="8"
-        fill="#dcecd8"
-      >
-        $
-      </text>
-      <text
-        x={x + 55}
-        y={y + 27}
-        fontFamily="Georgia, serif"
-        fontSize="8"
-        fill="#dcecd8"
-      >
-        $
-      </text>
-    </g>
-  )
-  return (
-    <svg className="ad-art" viewBox="0 0 100 68" aria-hidden>
-      {note(14, 26, -14)}
-      {note(18, 20, -4)}
-      {note(16, 14, 7)}
-    </svg>
-  )
-}
-
-function Coins() {
-  return (
-    <svg className="ad-art" viewBox="0 0 100 68" aria-hidden>
-      {[0, 1, 2, 3].map((i) => (
-        <g key={i}>
-          <ellipse
-            cx="50"
-            cy={54 - i * 9}
-            rx="26"
-            ry="9"
-            fill="#f0c02a"
-            stroke="#a07800"
-          />
-          <ellipse cx="50" cy={51 - i * 9} rx="26" ry="9" fill="#ffd85a" stroke="#a07800" />
-        </g>
-      ))}
-      <text
-        x="50"
-        y="20"
-        textAnchor="middle"
-        fontFamily="Georgia, serif"
-        fontSize="13"
-        fontWeight="bold"
-        fill="#8a6400"
-      >
-        $
-      </text>
     </svg>
   )
 }
@@ -247,20 +200,6 @@ function Phone() {
   )
 }
 
-function House() {
-  return (
-    <svg className="ad-art" viewBox="0 0 100 68" aria-hidden>
-      <rect x="0" y="54" width="100" height="14" fill="#6aae42" />
-      <path d="M50 8L88 36H12z" fill="#b04a32" stroke="#6a2a18" />
-      <rect x="22" y="36" width="56" height="20" fill="#f0e8d8" stroke="#a89880" />
-      <rect x="44" y="42" width="12" height="14" fill="#8a5a30" stroke="#5a3a1c" />
-      <rect x="28" y="41" width="11" height="9" fill="#9fd0f0" stroke="#5a7a8a" />
-      <rect x="61" y="41" width="11" height="9" fill="#9fd0f0" stroke="#5a7a8a" />
-      <rect x="66" y="14" width="7" height="14" fill="#8a4a34" stroke="#5a2a18" />
-    </svg>
-  )
-}
-
 function Piggy() {
   return (
     <svg className="ad-art" viewBox="0 0 100 68" aria-hidden>
@@ -279,19 +218,20 @@ function Piggy() {
   )
 }
 
-const ART: Record<ArtName, () => React.ReactElement> = {
+const DRAWN: Record<Exclude<ArtName, PhotoName>, () => React.ReactElement> = {
   desktop: DesktopPC,
   printer: Printer,
   phone: Phone,
-  house: House,
-  cash: Cash,
-  coins: Coins,
   person: Person,
   people: People,
   piggy: Piggy,
 }
 
 export function AdArt({ name }: { name: ArtName }) {
-  const Art = ART[name]
+  if (name in PHOTOS) {
+    // Decorative: the ad's own copy already says what it's selling.
+    return <img className="ad-art ad-art--photo" src={PHOTOS[name as PhotoName]} alt="" />
+  }
+  const Art = DRAWN[name as Exclude<ArtName, PhotoName>]
   return <Art />
 }

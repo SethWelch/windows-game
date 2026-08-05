@@ -3,12 +3,20 @@ import { useClock } from '@/hooks/useClock.ts'
 import { useOutsideClick } from '@/hooks/useOutsideClick.ts'
 import { ContextMenu } from '@/components/ui/ContextMenu.tsx'
 import type { MenuNode } from '@/components/ui/menu.types.ts'
-import { NetworkIcon, VolumeIcon } from '@/icons/TrayIcons.tsx'
+import { NetworkIcon, VolumeIcon, WarningIcon } from '@/icons/TrayIcons.tsx'
 import { audio, useAudioSettings } from '@/os/audio.ts'
+import { usePersisted } from '@/os/fs.ts'
 
 export function SystemTray() {
   const now = useClock()
   const { volume, muted } = useAudioSettings()
+  const persisted = usePersisted()
+
+  // The balloon opens the moment a write fails and closes when dismissed — derived
+  // rather than an effect, so there's no state to push on a render. Once dismissed
+  // the triangle stays in the tray and clicking it says the same thing again.
+  const [warningDismissed, setWarningDismissed] = useState(false)
+  const balloonOpen = !persisted && !warningDismissed
 
   const [sliderOpen, setSliderOpen] = useState(false)
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
@@ -30,6 +38,39 @@ export function SystemTray() {
 
   return (
     <div className="xp-tray">
+      {!persisted && (
+        <div className="xp-tray-warning">
+          <button
+            type="button"
+            className="xp-tray-icon xp-tray-button"
+            title="Your changes are not being saved"
+            aria-label="Your changes are not being saved"
+            onClick={() => setWarningDismissed((d) => !d)}
+          >
+            <WarningIcon size={16} />
+          </button>
+
+          {/* The balloon tip, which is how the shell told you this sort of thing. */}
+          {balloonOpen && (
+            <div className="xp-balloon" role="status">
+              <button
+                type="button"
+                className="xp-balloon-close"
+                aria-label="Close"
+                onClick={() => setWarningDismissed(true)}
+              >
+                ✕
+              </button>
+              <p className="xp-balloon-title">Your changes are not being saved</p>
+              <p className="xp-balloon-body">
+                There is not enough free space to store your files. Everything still
+                works, but nothing you do from now on will be here next time.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       <span className="xp-tray-icon" title="Local Area Connection">
         <NetworkIcon size={16} />
       </span>

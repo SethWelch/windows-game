@@ -35,7 +35,12 @@
     0 0,
     0 0;
   background-image:
-    /* the photograph */
+    /* The photograph. 1920x1543 at JPEG q60 — 346KB, down from 976KB at 2560px wide,
+       which was 90% of everything this app shipped. It's `cover` and centred, so a
+       1920-wide viewport uses it 1:1 and anything wider gets a soft upscale, which is
+       the one thing a photograph of grass and sky forgives. The untouched original is
+       `background-2560-original.jpg` alongside it; nothing imports it, so it is never
+       built into the bundle. */
     url('../../images/background.jpg'),
     /* sun haze, upper right */
     radial-gradient(

@@ -78,3 +78,26 @@ export function NetworkIcon({ size = 16, className }: IconProps) {
     </svg>
   )
 }
+
+/** The tray warning triangle, for when writes stop reaching disk. */
+export function WarningIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M8 1.6l6.6 11.8H1.4z"
+        fill="#ffcf3a"
+        stroke="#8a6a00"
+        strokeWidth="0.9"
+        strokeLinejoin="round"
+      />
+      <rect x="7.2" y="5.6" width="1.6" height="4.6" fill="#3a2b00" />
+      <rect x="7.2" y="11" width="1.6" height="1.6" fill="#3a2b00" />
+    </svg>
+  )
+}

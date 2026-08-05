@@ -223,6 +223,11 @@ export function AdContent({ body, art }: { body: AdBody; art?: ArtName }) {
     case 'teasers':
       return (
         <div className="ad-teasers">
+          {art && (
+            <span className="ad-teasers-art">
+              <AdArt name={art} />
+            </span>
+          )}
           <p className="ad-teasers-head">{body.heading}</p>
           <ul>
             {body.items.map((item) => (
@@ -351,6 +356,11 @@ export function AdContent({ body, art }: { body: AdBody; art?: ArtName }) {
     case 'quiz':
       return (
         <div className="ad-quiz">
+          {art && (
+            <span className="ad-quiz-art">
+              <AdArt name={art} />
+            </span>
+          )}
           <p className="ad-quiz-question">{body.question}</p>
           <div className="ad-quiz-answers">
             {body.answers.map((answer) => (
@@ -364,7 +374,12 @@ export function AdContent({ body, art }: { body: AdBody; art?: ArtName }) {
 
     case 'strip':
       return (
-        <div className="ad-strip">
+        <div className="ad-strip" style={{ background: body.background }}>
+          {art && (
+            <span className="ad-strip-art">
+              <AdArt name={art} />
+            </span>
+          )}
           <span className="ad-strip-words">
             {body.words.map((word, i) => (
               <WordRun key={i} word={word} />
@@ -379,6 +394,11 @@ export function AdContent({ body, art }: { body: AdBody; art?: ArtName }) {
     case 'counter':
       return (
         <div className="ad-counter">
+          {art && (
+            <span className="ad-counter-art">
+              <AdArt name={art} />
+            </span>
+          )}
           <p className="ad-counter-lead">{body.lead}</p>
           <span className="ad-counter-digits">
             {[...body.digits].map((digit, i) => (
@@ -421,6 +441,102 @@ export function AdContent({ body, art }: { body: AdBody; art?: ArtName }) {
               <span>{link.note}</span>
             </div>
           ))}
+        </div>
+      )
+
+    case 'marquee':
+      return (
+        <button type="button" className="ad-marquee" onClick={more}>
+          {art && (
+            <span className="ad-marquee-art">
+              <AdArt name={art} />
+            </span>
+          )}
+          <span className="ad-marquee-body">
+            {/* Two copies of the run, side by side, so the loop has no seam. */}
+            <span className="ad-marquee-track">
+              {[0, 1].map((copy) => (
+                <span key={copy} className="ad-marquee-run" aria-hidden={copy === 1}>
+                  {body.words.map((word, i) => (
+                    <WordRun key={i} word={word} />
+                  ))}
+                </span>
+              ))}
+            </span>
+            <span className="ad-marquee-tail">{body.tail}</span>
+          </span>
+        </button>
+      )
+
+    case 'mascot':
+      return (
+        <button type="button" className="ad-mascot" onClick={more}>
+          {/* The frame holds the artwork's own 1:1 aspect, so the sign overlay lands
+              on the sign at any size the spawn jitter picks. */}
+          <span className="ad-mascot-frame">
+            {art && <AdArt name={art} />}
+            <span className="ad-mascot-sign">
+              {body.sign.map((line) => (
+                <i key={line}>{line}</i>
+              ))}
+            </span>
+          </span>
+          <span className="ad-mascot-caption">{body.caption}</span>
+        </button>
+      )
+
+    case 'game':
+      return (
+        <div className="ad-game">
+          <p className="ad-game-head">{body.heading}</p>
+          <div className="ad-game-field">
+            {Array.from({ length: body.targets }, (_, i) => (
+              <button
+                key={i}
+                type="button"
+                className="ad-game-target"
+                aria-label="Target"
+                onClick={more}
+                /* Scattered and paced off the index rather than at random, so a
+                   re-render puts every target back where it was. */
+                style={{
+                  left: `${8 + ((i * 37) % 74)}%`,
+                  top: `${10 + ((i * 53) % 62)}%`,
+                  animationDuration: `${1.6 + (i % 4) * 0.45}s`,
+                  animationDelay: `${(i % 5) * -0.37}s`,
+                }}
+              />
+            ))}
+            <span className="ad-game-crosshair" aria-hidden />
+          </div>
+          <div className="ad-game-foot">
+            <span className="ad-game-prize">{body.prize}</span>
+            <button type="button" className="ad-game-cta" onClick={more}>
+              {body.cta}
+            </button>
+          </div>
+        </div>
+      )
+
+    case 'boxes':
+      return (
+        <div className="ad-boxgame">
+          <p className="ad-boxgame-head">{body.heading}</p>
+          <div className="ad-boxgame-row">
+            {body.boxes.map((label, i) => (
+              <button
+                key={label}
+                type="button"
+                className="ad-boxgame-box"
+                onClick={more}
+                style={{ animationDelay: `${i * -0.42}s` }}
+              >
+                <span className="ad-boxgame-lid" aria-hidden />
+                <span className="ad-boxgame-num">{label}</span>
+              </button>
+            ))}
+          </div>
+          <p className="ad-boxgame-note">{body.note}</p>
         </div>
       )
 

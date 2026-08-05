@@ -230,6 +230,23 @@ function persist(s: FsState) {
 /** Whether the last mutation reached durable storage. */
 export const isPersisted = () => persistOk
 
+/**
+ * Subscribes to that. `commit` persists before it notifies, so a component reading
+ * this always sees the outcome of the write that woke it up.
+ *
+ * This matters because the failure is otherwise completely silent: Paint saves each
+ * canvas as a PNG data URL, and a handful of those will exhaust the few megabytes
+ * `localStorage` allows. Everything keeps working for the session and then quietly
+ * isn't there next time.
+ */
+export function usePersisted(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => persistOk,
+    () => persistOk,
+  )
+}
+
 let state = load()
 const listeners = new Set<() => void>()
 

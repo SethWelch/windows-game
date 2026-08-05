@@ -32,19 +32,39 @@ npm run dev
   sound off, then `Starting Windows XP...` and the desktop. The machine comes up with
   nothing running on it.
 - **SPAM** — a desktop icon that does exactly what it says. Double-click it and
-  fifteen pop-up advertisements arrive over the next few seconds, scattered across
-  the desktop, all invented nonsense from 2001. They aren't windows: no titlebar, no
+  thirty-six pop-up advertisements arrive over the next few seconds, scattered across
+  the desktop: forty-nine templates across four frames — a system dialog, a bare
+  browser strip, a whole Internet Explorer window, and no frame at all — and
+  twenty-four different body layouts, so no two look like the same program made them.
+  You never get the same one twice; once all forty-nine are up, that's the ceiling.
+  Twenty-eight carry a picture, seven sign themselves with an invented house mark, and
+  nineteen refuse to sit still — a flashing wash over the content, a strobing frame,
+  hues rolling through, or a banner scrolling forever. Three pretend to be a game you
+  can win: two shooting galleries and a pick-a-box, none of which keep score, because
+  whatever you hit gets you another advertisement. They aren't windows: no titlebar, no
   taskbar button, their own layer above the windows and below the taskbar. Each one
-  closes on its X, Escape closes the lot, and the SpamBot window it leaves behind has
-  a live count and a Remove All. Clicking an advertisement gets you another
+  closes on its X, Escape closes the lot, and the SpamBot window it leaves behind has a
+  live count and a Remove All. Clicking an advertisement gets you another
   advertisement, which was always the deal.
+
+  Imagery comes from two sets. Most slots take one of the ten photographs in
+  [`images/`](src/components/Popups/images/) — freely-licensed stock, resized to 240px
+  and reduced to a 128-colour palette, which is 96 KB for the set against 39 MB as
+  supplied. [`images/SOURCES.md`](src/components/Popups/images/SOURCES.md) records what
+  each one is. The rest is [`adArt.tsx`](src/components/Popups/adArt.tsx), original
+  vector work covering the house marks, the system glyphs, and the few products no
+  photograph here does: no real brands, nobody's likeness.
 - **A shell you can delete** — My Computer is the one seeded item that Delete will
   accept. Empty the Recycle Bin with it inside and Windows won't come back: you get a
   DOS prompt, which tells you to type `WINDOWS`. `HELP` lists the rest, `RESTORE`
   puts the icon back, and `RESTART` always works, because the boot state is the one
   thing here that isn't persisted.
 - **Taskbar** — Start menu with All Programs, task buttons that track window
-  state, system tray with a live clock and a working volume control.
+  state, system tray with a live clock and a working volume control. If a write stops
+  reaching `localStorage` — Paint saves each canvas as a data URL, and a few of those
+  will exhaust the quota — a warning appears in the tray and raises a balloon tip
+  saying so. Everything keeps working from memory; the point is that it no longer
+  says it saved when it didn't.
 - **Sound** — every tone is synthesised at runtime by `src/os/audio.ts`; no audio
   files ship with this project. Message boxes, minimize/maximize, emptying the
   Recycle Bin and an incoming AIM message all make a noise, and the tray speaker

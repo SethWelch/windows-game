@@ -17,6 +17,9 @@
   position: absolute;
   display: flex;
   flex-direction: column;
+  /* Keeps the z-index on .ad-badge and .ad-brandcorner inside this ad. Without it
+     they join .ad-layer's stacking context and paint over later ads. */
+  isolation: isolate;
   pointer-events: auto;
   background: #fff;
   border: 1px solid #0a246a;
@@ -238,6 +241,7 @@
 /* ---- Body shell ---- */
 
 .ad-body {
+  position: relative;
   flex: 1 1 auto;
   display: flex;
   min-height: 0;
@@ -876,7 +880,8 @@
   align-items: center;
   gap: 8px;
   padding: 0 8px;
-  background: linear-gradient(90deg, #0018a8 0%, #4a00b0 100%);
+  /* Each banner brings its own, so the two of them at 468x60 don't read as one ad
+     shown twice. */
 }
 .ad-strip-words {
   flex: 1 1 auto;
@@ -1066,6 +1071,12 @@
   max-height: 100%;
   min-height: 0;
 }
+/* The photographs are cutouts on transparency and are all wider or taller than the
+   slot they land in, so they letterbox rather than crop or stretch. */
+.ad-art--photo {
+  object-fit: contain;
+  object-position: center bottom;
+}
 
 .ad-pitch[data-art] {
   padding-top: 7px;
@@ -1078,23 +1089,24 @@
 }
 
 .ad-serif-art {
-  flex: 0 0 56px;
+  flex: 0 0 68px;
   align-self: center;
   width: 58%;
 }
 
 .ad-exit-art {
+  /* In the channel the ticks leave on the right, below .ad-exit-flash and above
+     whatever starburst lands in the bottom corner. */
   position: absolute;
   right: 8px;
-  bottom: 34px;
+  top: 34px;
   width: 84px;
   height: 58px;
-  /* Tucked into the corner the ticks don't reach, as the product shot always was. */
   pointer-events: none;
 }
 
 .ad-form-art {
-  flex: 0 0 44px;
+  flex: 0 0 58px;
   align-self: center;
   width: 44%;
 }
@@ -1103,6 +1115,247 @@
   flex: 0 0 48px;
   align-self: center;
   width: 40%;
+}
+
+.ad-strip-art {
+  flex: 0 0 auto;
+  height: 100%;
+  width: 80px;
+  padding: 3px 0;
+}
+
+/* ---- mascot ----
+   Line art with a see-through sign, and the copy written into it. The percentages
+   below are measured off the artwork: the sign's inside edges sit at 28% and 76% of
+   the image width, and 13% to 31% of its height. */
+
+.ad-mascot {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  overflow: hidden;
+  background: linear-gradient(180deg, #eaffd8 0%, #9ee06a 100%);
+}
+.ad-mascot-frame {
+  position: relative;
+  /* Matches the artwork, which is square. */
+  aspect-ratio: 1;
+  height: 100%;
+  max-width: 100%;
+}
+.ad-mascot-frame .ad-art {
+  object-fit: fill;
+}
+.ad-mascot-sign {
+  position: absolute;
+  left: 28%;
+  top: 13%;
+  width: 48%;
+  height: 18%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ad-mascot-sign i {
+  font: bold 11px/1.05 'Arial Narrow', var(--xp-font);
+  font-style: normal;
+  letter-spacing: 0.3px;
+  color: #b00018;
+  white-space: nowrap;
+}
+.ad-mascot-caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 3px;
+  background: rgba(10, 40, 10, 0.72);
+  color: #fff;
+  font: italic 9px var(--xp-font);
+  text-align: center;
+}
+
+.ad-teasers-art {
+  flex: 0 0 46px;
+  align-self: center;
+  width: 52%;
+}
+
+.ad-quiz-art {
+  flex: 0 0 62px;
+  align-self: center;
+  width: 50%;
+}
+
+.ad-counter-art {
+  flex: 0 0 54px;
+  align-self: center;
+  width: 58%;
+}
+
+/* ---- The ones that pretended to be a game ----
+   A shooting gallery and a pick-a-box, neither of which had any state: whatever you
+   hit, you got another advertisement. The drift is CSS; the scatter is arithmetic on
+   the target's index, so nothing moves when React re-renders. */
+
+.ad-game {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 7px 9px 8px;
+  background: linear-gradient(180deg, #101c3a 0%, #2a1050 100%);
+}
+.ad-game-head {
+  margin: 0;
+  text-align: center;
+  font: bold 12px 'Arial Black', Impact, var(--xp-font);
+  color: #ffd21a;
+  text-shadow: 1px 1px 0 #000;
+}
+.ad-game-field {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border: 2px inset #6a6a8a;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 20px),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 20px),
+    #05203a;
+  cursor: crosshair;
+}
+.ad-game-target {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: crosshair;
+  /* The bullseye, in rings rather than artwork. */
+  background: radial-gradient(
+    circle,
+    #fff 0 14%,
+    #d81020 14% 34%,
+    #fff 34% 54%,
+    #d81020 54% 74%,
+    #fff 74% 86%,
+    #d81020 86% 100%
+  );
+  box-shadow: 0 0 0 1px #4a0008;
+  animation-name: ad-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes ad-drift {
+  to {
+    transform: translate(22px, -16px) scale(0.82);
+  }
+}
+/* Sits under the pointer's job, not over it — a decoration in the middle. */
+.ad-game-crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 46%, rgba(255, 60, 60, 0.7) 46% 54%, transparent 54%),
+    linear-gradient(180deg, transparent 46%, rgba(255, 60, 60, 0.7) 46% 54%, transparent 54%);
+}
+.ad-game-foot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.ad-game-prize {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: bold 10px var(--xp-font);
+  color: #7affc0;
+}
+.ad-game-cta {
+  flex: 0 0 auto;
+  padding: 3px 12px;
+  cursor: pointer;
+  border: 2px outset #ff8a5a;
+  background: linear-gradient(180deg, #ff7a3a 0%, #d02000 100%);
+  color: #fff;
+  font: bold 11px 'Arial Black', Impact, var(--xp-font);
+  animation: ad-pulse 700ms ease-in-out infinite alternate;
+}
+
+.ad-boxgame {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 9px 11px 10px;
+  background: linear-gradient(180deg, #fff8d8 0%, #ffd21a 100%);
+  text-align: center;
+}
+.ad-boxgame-head {
+  margin: 0;
+  font: bold 13px 'Arial Black', Impact, var(--xp-font);
+  color: #b00018;
+}
+.ad-boxgame-row {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 9px;
+}
+.ad-boxgame-box {
+  position: relative;
+  flex: 0 1 66px;
+  padding: 0;
+  cursor: pointer;
+  border: 2px outset #c89a30;
+  background: linear-gradient(180deg, #a8702a 0%, #6a3f10 100%);
+  animation: ad-wobble 1.5s ease-in-out infinite alternate;
+}
+@keyframes ad-wobble {
+  from {
+    transform: rotate(-3deg);
+  }
+  to {
+    transform: rotate(3deg) translateY(-3px);
+  }
+}
+/* The lid, waiting to come off. */
+.ad-boxgame-lid {
+  position: absolute;
+  inset: 0 -3px auto -3px;
+  height: 32%;
+  background: linear-gradient(180deg, #d8a040 0%, #a8702a 100%);
+  border: 1px solid #6a3f10;
+}
+.ad-boxgame-num {
+  display: block;
+  padding-top: 34%;
+  font: bold 22px Impact, 'Arial Black', var(--xp-font);
+  color: #ffe8a0;
+  text-shadow: 1px 1px 0 #3a1c00;
+}
+.ad-boxgame-note {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 10px;
+  font-style: italic;
+  color: #6a5200;
 }
 
 /* ---- The house mark ----
@@ -1141,12 +1394,168 @@
   overflow: hidden;
 }
 
+/* Led with, rather than signed with. */
+.ad-brandbanner {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  background: linear-gradient(180deg, #4a80d8 0%, #14418c 100%);
+  color: #fff;
+  font: bold 10px var(--xp-font);
+  letter-spacing: 0.8px;
+  overflow: hidden;
+}
+.ad-brandbanner .ad-mark {
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5));
+}
+.ad-brandbanner > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Or tucked into a corner of the artwork, half over the edge of it. */
+.ad-brandcorner {
+  position: absolute;
+  left: 0;
+  /* Clear of .ad-ie-status, where there is one — must match its height there. */
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 4px;
+  background: rgba(255, 255, 255, 0.92);
+  border-top: 1px solid #b8b8b8;
+  border-right: 1px solid #b8b8b8;
+  font: bold 9px var(--xp-font);
+  letter-spacing: 0.5px;
+  color: #14418c;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.ad[data-chrome='ie'] .ad-brandcorner {
+  bottom: 19px;
+}
+
+/* ---- The ones that couldn't sit still ----
+   Three ways of demanding attention, applied to the ad as a whole. They are the
+   loudest thing on the screen on purpose; `blink` is set on nine templates, not all
+   of them, because a wall of flashing reads as one effect rather than as chaos. */
+
+.ad[data-blink='bg'] .ad-body::after {
+  /* A wash over the content, not the frame — clipped by .ad-body, and above whatever
+     background the body's own content painted. */
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: #fff200;
+  animation: ad-blink-bg 620ms steps(1) infinite;
+}
+@keyframes ad-blink-bg {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.42;
+  }
+}
+
+.ad[data-blink='frame'] {
+  border-width: 3px;
+  animation: ad-blink-frame 460ms steps(1) infinite;
+}
+@keyframes ad-blink-frame {
+  0% {
+    border-color: #e01020;
+  }
+  50% {
+    border-color: #ffd21a;
+  }
+}
+
+.ad[data-blink='hue'] {
+  animation: ad-blink-hue 3.4s linear infinite;
+}
+@keyframes ad-blink-hue {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* ---- marquee ---- */
+
+.ad-marquee {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffe86a 0%, #ffd21a 100%);
+  font-family: Impact, 'Arial Black', var(--xp-font);
+}
+.ad-marquee-art {
+  flex: 0 0 auto;
+  width: 74px;
+  padding: 2px 0;
+}
+.ad-marquee-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  overflow: hidden;
+}
+.ad-marquee-track {
+  display: flex;
+  /* Two copies at their natural width; -50% of that is exactly one of them, so the
+     loop has no seam no matter how long the copy is. */
+  width: max-content;
+  animation: ad-slide 9s linear infinite;
+}
+.ad-marquee-run {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: 7px;
+  padding-right: 28px;
+  white-space: nowrap;
+}
+@keyframes ad-slide {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.ad-marquee-tail {
+  flex: 0 0 auto;
+  text-align: center;
+  font: 9px var(--xp-font);
+  letter-spacing: 1px;
+  color: #6a5200;
+  animation: ad-wink 900ms steps(1) infinite;
+}
+@keyframes ad-wink {
+  50% {
+    opacity: 0;
+  }
+}
+
 /* ---- The starburst ---- */
 
 .ad-badge {
   position: absolute;
   right: 4px;
   bottom: 4px;
+  z-index: 1;
   /* Square, and inside the edge: `.ad` clips its overflow, so a starburst hanging
      over the border would simply lose half of itself. */
   width: 58px;

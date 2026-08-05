@@ -192,6 +192,73 @@
   white-space: nowrap;
 }
 
+/* ---- The balloon tip ----
+   Raised when a write stops reaching localStorage, which is otherwise silent. Pale
+   yellow with a tail pointing down at the tray icon that owns it, as the shell drew
+   these. */
+
+.xp-tray-warning {
+  position: relative;
+  display: flex;
+}
+.xp-balloon {
+  position: absolute;
+  right: -6px;
+  /* Clear of the taskbar, with room for the tail. */
+  bottom: calc(100% + 12px);
+  width: 244px;
+  padding: 9px 24px 10px 11px;
+  background: #ffffe1;
+  border: 1px solid #948a5e;
+  border-radius: 7px;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+  color: #000;
+  font: var(--xp-fs) var(--xp-font);
+  text-align: left;
+  cursor: default;
+}
+/* The tail: a rotated square with two of its borders showing, so the balloon's own
+   border carries on around the point. */
+.xp-balloon::after {
+  content: '';
+  position: absolute;
+  right: 13px;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  background: #ffffe1;
+  border-right: 1px solid #948a5e;
+  border-bottom: 1px solid #948a5e;
+  transform: rotate(45deg);
+}
+.xp-balloon-title {
+  margin: 0 0 3px;
+  font-weight: bold;
+}
+.xp-balloon-body {
+  margin: 0;
+  line-height: 1.4;
+}
+.xp-balloon-close {
+  position: absolute;
+  right: 5px;
+  top: 4px;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  color: #4a4436;
+  font: 9px var(--xp-font);
+}
+.xp-balloon-close:hover {
+  background: #e8e0b8;
+}
+
 /* ---- Volume ---- */
 
 .xp-tray-volume {

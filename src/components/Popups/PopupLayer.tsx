@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import { popups, useAds } from '@/os/popups.ts'
 import type { Ad } from '@/os/popups.ts'
 import { AdContent } from './adBodies.tsx'
@@ -38,7 +38,12 @@ export function PopupLayer() {
   )
 }
 
-function AdWindow({ ad }: { ad: Ad }) {
+/**
+ * Memoized because `commit` replaces the whole array: without this, spawn number
+ * thirty-six re-renders all thirty-six ads, and a burst costs O(n^2) renders. `Ad`
+ * objects are never mutated after they're made, so identity is a sound guard.
+ */
+const AdWindow = memo(function AdWindow({ ad }: { ad: Ad }) {
   const { template } = ad
   const close = () => popups.close(ad.id)
 
@@ -47,6 +52,7 @@ function AdWindow({ ad }: { ad: Ad }) {
       className="ad"
       data-kind={template.kind}
       data-chrome={template.chrome}
+      data-blink={template.blink}
       style={{ left: ad.x, top: ad.y, width: ad.width, height: ad.height }}
     >
       {template.chrome === 'xp' && (
@@ -103,6 +109,13 @@ function AdWindow({ ad }: { ad: Ad }) {
         </>
       )}
 
+      {template.brand?.at === 'banner' && (
+        <div className="ad-brandbanner">
+          <BrandMark mark={template.brand.mark} />
+          <span>{template.brand.name}</span>
+        </div>
+      )}
+
       <div className="ad-body">
         {/* The search column that installed itself and could not be uninstalled. */}
         {template.sidebar && (
@@ -124,9 +137,9 @@ function AdWindow({ ad }: { ad: Ad }) {
         <AdContent body={template} art={template.art} />
       </div>
 
-      {/* The house mark along the bottom. Every one of these was signed by a company
-          nobody had heard of before that afternoon. */}
-      {template.brand && (
+      {/* Signed along the bottom by a company nobody had heard of before that
+          afternoon. Only a couple of them bothered. */}
+      {template.brand?.at === 'strip' && (
         <div className="ad-brandstrip">
           <BrandMark mark={template.brand.mark} />
           <span className="ad-brandstrip-name">{template.brand.name}</span>
@@ -141,7 +154,14 @@ function AdWindow({ ad }: { ad: Ad }) {
         </div>
       )}
 
+      {template.brand?.at === 'corner' && (
+        <span className="ad-brandcorner">
+          <BrandMark mark={template.brand.mark} />
+          <span>{template.brand.name}</span>
+        </span>
+      )}
+
       {ad.badge && <span className="ad-badge">{ad.badge}</span>}
     </div>
   )
-}
+})
