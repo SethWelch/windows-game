@@ -76,10 +76,18 @@ is higher than most codebases and that is intentional.
 
 ## Practical notes
 
-- **This directory is not a git repository.** There is no undo. Before overwriting or
-  deleting a file, copy it aside — the 2560px wallpaper original survives only as
-  `src/images/background-2560-original.jpg` for this reason. Unreferenced files under
-  `src/` are never emitted by Vite, so keeping an original costs nothing in the build.
+- This became a git repository partway through its life, so anything from before the
+  initial commit has no history behind it. The 2560px wallpaper original is kept as
+  `src/images/background-2560-original.jpg` for that reason — from that era, it was the
+  only copy. Unreferenced files under `src/` are never emitted by Vite, so keeping an
+  original costs nothing in the build.
+- This is a personal repo on an account that also has a work one, and it is **pinned**
+  so the global `gh-switch` toggle can't touch it: `origin` is `git@github-personal:...`
+  (an SSH alias that always uses the personal key) and `user.email` is set repo-locally.
+  Leave both alone. If a push ever authenticates as the wrong account, check
+  `git remote get-url origin` before touching `~/.ssh/config` — push *authorization*
+  (the SSH key) and commit *attribution* (`user.email`) are separate mechanisms and
+  fixing one does nothing for the other.
 - **Optimising images**: macOS `sips` resizes and re-encodes JPEG but *cannot* write
   WebP and cannot quantize a palette. For PNG cutouts, resize with `sips -Z` and then
   reduce to a ≤128-colour palette with `tRNS` alpha — that took the ad photos from
