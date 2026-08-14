@@ -24,7 +24,7 @@
   background: var(--title-active);
   /* Carries the panel's own radius, since the panel no longer clips it. */
   border-radius: 8px 8px 0 0;
-  border-bottom: 2px solid #e97b1a;
+  border-bottom: 2px solid var(--sm-rule);
   color: #fff;
   font: bold 14px var(--xp-title-font);
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
@@ -50,8 +50,8 @@
 
 .xp-sm-right {
   flex: 1 1 auto;
-  background: linear-gradient(180deg, #dae7f8 0%, #c9ddf6 100%);
-  border-left: 1px solid #a9c3e8;
+  background: var(--sm-right);
+  border-left: 1px solid var(--sm-right-edge);
   padding: 5px 3px;
 }
 
@@ -80,7 +80,7 @@
 }
 .xp-sm-right .xp-sm-item {
   font-weight: bold;
-  color: #0b3f8f;
+  color: var(--sm-heading);
 }
 .xp-sm-right .xp-sm-item:hover {
   color: #fff;
@@ -92,12 +92,22 @@
   background: #d3d3ce;
   border-bottom: 1px solid #fff;
 }
-/* The divider is what falls to the bottom of the column, carrying All Programs
-   with it — XP put exactly one rule there, directly above All Programs. Pushing
-   the button down instead left the divider stranded under the pinned list with a
-   second rule of its own above the button. */
-.xp-sm-left .xp-sm-sep {
+/* The divider that falls to the bottom of the column, carrying All Programs with it.
+   Pushing the button down instead left the divider stranded under the pinned list with a
+   second rule of its own above the button.
+
+   Its own class rather than every left-hand separator: there are two now — one between
+   the pinned group and the frequently-used one — and two `auto` top margins would split
+   the free space between them, opening a gap in the middle of the list. */
+.xp-sm-sep--push {
   margin-top: auto;
+}
+
+/* On the right column's blue, the grey-over-white rule reads as a scratch. */
+.xp-sm-sep--right {
+  margin: 5px 6px;
+  background: var(--sm-right-edge);
+  border-bottom-color: rgba(255, 255, 255, 0.75);
 }
 
 .xp-sm-allprograms {
@@ -110,7 +120,7 @@
   width: 16px;
   height: 16px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #4aa63c 0%, #2b7d1f 100%);
+  background: var(--sm-logoff);
   color: #fff;
   font-size: 9px;
   line-height: 1;

@@ -56,6 +56,12 @@ export const buildPlayerMenus = (a: PlayerActions, f: PlayerFlags): Menu[] => [
         label: '&Visualizations',
         submenu: [
           {
+            id: 'vis-ambience',
+            label: '&Ambience',
+            checked: f.visualization === 'ambience',
+            onSelect: () => a.setVisualization('ambience'),
+          },
+          {
             id: 'vis-bars',
             label: '&Bars',
             checked: f.visualization === 'bars',

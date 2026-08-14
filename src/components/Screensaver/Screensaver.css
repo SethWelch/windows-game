@@ -1,0 +1,40 @@
+/* The screen saver. Over everything, and the only thing on screen. */
+
+.saver {
+  position: fixed;
+  inset: 0;
+  /* Top of the ladder — see the canonical list in Shutdown/TurnOffDialog.css.
+     `.xp-desktop` is `position: relative` with no transform, so it is not a containing
+     block and `fixed` really does mean the viewport here. Worth saying, because that
+     assumption is wrong for anything inside a window. */
+  z-index: 1100;
+  background: #000;
+  /* There is nothing to point at. */
+  cursor: none;
+  outline: 0;
+}
+
+.saver-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* The backing store is a fraction of the viewport and stretched up. Smoothing it would
+     undo the point: these ran on a CRT and the chunkiness is the period. */
+  image-rendering: pixelated;
+}
+
+/* Inside Display Properties' little monitor, the canvas covers the whole screen rather
+   than the viewport.
+
+   Absolutely positioned on purpose. `.dp-screen` carries 7px of padding for the sample
+   window that normally sits in there, and a flow-level `width: 100%` resolves against the
+   *content* box — which is 14px narrower and shorter than the glass, so the wallpaper
+   showed through down the right-hand side and along the bottom. An absolute box resolves
+   `inset` and percentages against the padding box instead, which is precisely the area
+   meant to be covered. */
+.dp-screen > .saver-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}

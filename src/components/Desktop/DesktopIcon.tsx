@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { Icon } from '@/icons/Icon.tsx'
 import { CELL_H, CELL_W, cellToPx } from '@/os/desktop.ts'
+import { WALK_MS } from '@/os/buddy.ts'
 import type { FsNode } from '@/os/fs.ts'
 import { hasShortcutBadge, iconIdFor } from '@/os/shell.ts'
 import './DesktopIcon.css'
@@ -19,6 +20,7 @@ interface Cell {
 export function DesktopIcon({
   node,
   cell,
+  carriedTo,
   selected,
   cut,
   editing,
@@ -32,6 +34,12 @@ export function DesktopIcon({
 }: {
   node: FsNode
   cell: Cell
+  /**
+   * Somewhere other than its cell to sit, in desktop pixels — Bongo's hand, when he has
+   * picked it up. It transitions there over the same duration as his walk, so the two
+   * glide in step without either of them driving animation frames.
+   */
+  carriedTo?: { x: number; y: number } | null
   selected: boolean
   cut: boolean
   editing: boolean
@@ -46,6 +54,7 @@ export function DesktopIcon({
 }) {
   const [draft, setDraft] = useState(node.name)
   const home = cellToPx(cell.col, cell.row)
+  const at = carriedTo ?? home
 
   return (
     <div
@@ -56,9 +65,14 @@ export function DesktopIcon({
       // Makes this icon a drop target for os/dnd.ts's hit-test.
       data-drop-node={node.id}
       style={{
-        transform: `translate(${home.x}px, ${home.y}px)`,
+        transform: `translate(${at.x}px, ${at.y}px)`,
         width: CELL_W,
         height: CELL_H,
+        // Only while carried: the icon layer sits under the windows, and an icon being
+        // marched about needs to be visible over him. The taskbar is 10.
+        ...(carriedTo
+          ? { transition: `transform ${WALK_MS}ms ease-in-out`, zIndex: 8 }
+          : null),
       }}
       tabIndex={0}
       onPointerDown={onPointerDown}

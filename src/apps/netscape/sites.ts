@@ -70,6 +70,20 @@ const UA_STYLE = `
 `
 
 /**
+ * Splices our own markup into the front of someone else's `<head>`, adding a head if
+ * the document hasn't got one — which most hand-written HTML hasn't.
+ *
+ * Prepending rather than appending is what makes the cascade come out right: anything
+ * the document declares for itself then comes after ours and wins, which is the
+ * position a user-agent stylesheet is supposed to be in.
+ */
+export function withHead(html: string, extra: string): string {
+  return /<head[^>]*>/i.test(html)
+    ? html.replace(/<head[^>]*>/i, (open) => `${open}${extra}`)
+    : `<head>${extra}</head>${html}`
+}
+
+/**
  * Prepends a `<base>` to fetched markup.
  *
  * A `srcdoc` document's own base URL is `about:srcdoc`, so every relative link and
@@ -78,10 +92,7 @@ const UA_STYLE = `
  * gives an absolute address the chrome can navigate to.
  */
 export function withBase(address: string, html: string): string {
-  const base = `<base href="${address.replace(/"/g, '&quot;')}">`
-  return /<head[^>]*>/i.test(html)
-    ? html.replace(/<head[^>]*>/i, (open) => `${open}${base}`)
-    : `<head>${base}</head>${html}`
+  return withHead(html, `<base href="${address.replace(/"/g, '&quot;')}">`)
 }
 
 /** The `<title>` out of fetched markup, so the window caption can be right. */
@@ -115,6 +126,43 @@ export function documentFor(page: Page): string {
 </head>
 <body ${page.bodyAttrs ?? ''}>
 ${page.html}
+</body>
+</html>`
+}
+
+/** Enough escaping for text going into an element, which is all `<title>` needs. */
+const escapeText = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/**
+ * What Composer previews: a draft's markup with its style sheet behind it, rendered
+ * through the same defaults Navigator gives a real page.
+ *
+ * Sharing `UA_STYLE` with `documentFor` is the whole point — a preview that rendered
+ * against the host browser's modern defaults would show you Arial and hairline rules
+ * for a page that lands in Times with chiselled ones. Same argument `SaverCanvas`
+ * makes about the screen saver preview: it must not be able to show you something
+ * other than what you get.
+ *
+ * The author's CSS is emitted *after* `UA_STYLE` so it wins on equal specificity, the
+ * position a real user-agent sheet gets for free from being a weaker cascade origin.
+ * Put it first and `body { font-family }` in the draft would silently lose to Times.
+ *
+ * A draft that is already a whole document gets spliced rather than wrapped. People
+ * paste `<html>` into an HTML editor, and wrapping one document inside another leaves
+ * the parser to guess which `<body>` you meant.
+ */
+export function draftDocument(html: string, css: string, title: string): string {
+  const sheets = `<style>${UA_STYLE}</style>${css.trim() ? `<style>${css}</style>` : ''}`
+  if (/^\s*(<!doctype|<html)/i.test(html)) return withHead(html, sheets)
+  return `<!doctype html>
+<html>
+<head>
+<title>${escapeText(title)}</title>
+${sheets}
+</head>
+<body>
+${html}
 </body>
 </html>`
 }

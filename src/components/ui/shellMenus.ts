@@ -24,6 +24,11 @@ export interface FolderMenuActions {
   onRefresh: () => void
   /** Desktop-only extras such as Arrange Icons By. */
   extras?: MenuNode[]
+  /**
+   * Only the desktop has a Properties sheet to open — Display Properties. Folders in
+   * Explorer have none, so leaving this out keeps the item greyed for them.
+   */
+  onProperties?: () => void
 }
 
 /** Right-click on empty space inside a folder (or the desktop). */
@@ -62,7 +67,12 @@ export function folderContextMenu(a: FolderMenuActions): MenuNode[] {
       ],
     },
     { kind: 'separator' },
-    { id: 'properties', label: 'P&roperties', disabled: true },
+    {
+      id: 'properties',
+      label: 'P&roperties',
+      disabled: !a.onProperties,
+      onSelect: a.onProperties,
+    },
   ]
 }
 
@@ -98,6 +108,7 @@ export function itemContextMenu(a: ItemMenuActions): MenuNode[] {
     { id: 'delete', label: '&Delete', disabled: undeletable, onSelect: a.onDelete },
     { id: 'rename', label: 'Rena&me', disabled: locked, onSelect: a.onRename },
     { kind: 'separator' },
+    /* A file's property sheet is a different dialog again, and there isn't one. */
     { id: 'properties', label: 'P&roperties', disabled: true },
   ]
 }

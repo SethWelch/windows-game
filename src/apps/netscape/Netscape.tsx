@@ -238,6 +238,9 @@ export function Netscape({ windowId, args }: AppProps) {
       if (page) setSource(sourceFor(page))
       else if (typeof liveHtml === 'string') setSource(liveHtml)
     },
+    // Communicator's other half. A window of its own rather than a page in the
+    // viewport: it is an editor, and popping its preview out is the whole point.
+    composer: () => wm.openApp('composer'),
     about: () => setAbout(true),
     close: () => wm.close(windowId),
     toggleBar: (bar: 'navigation' | 'location' | 'personal') =>

@@ -1,0 +1,91 @@
+/* Bliss, eight layers deep: the photograph over a CSS approximation of itself, which
+   doubles as the loading state and as the fallback if the asset goes missing. A class
+   rather than inline styles so os/wallpaper.ts can hand it to both the desktop and the
+   preview monitor in Display Properties. All the gradient stops are percentages, so it
+   scales down to a 186px preview without any changes.
+
+   The photograph arrives as `--bliss-photo`, set from the `import` in os/wallpaper.ts.
+   It is deliberately not a `url()` here: a relative path in a stylesheet is relative to
+   the stylesheet, so moving this rule between folders silently breaks it — Vite leaves
+   an unresolvable path alone rather than failing the build, and all you see is the
+   approximation underneath — which is exactly what happened once. Coming through a
+   module import, the bundler resolves and hashes it and the path cannot rot. The `none`
+   fallback keeps the layer count aligned with background-size/position/repeat if the
+   property is ever unset. */
+.xp-bliss {
+  background-color: #3f83d8;
+  background-repeat: no-repeat;
+  /* One entry per background-image layer, in the same order. */
+  background-size:
+    cover,
+    auto,
+    auto,
+    auto,
+    auto,
+    auto,
+    auto,
+    auto;
+  background-position:
+    center center,
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    0 0;
+  background-image:
+    /* The photograph. 1920x1543 at JPEG q60 — 338KB, down from 976KB at 2560px wide,
+       which was 90% of everything this app shipped. It's `cover` and centred, so a
+       1920-wide viewport uses it 1:1 and anything wider gets a soft upscale, which is
+       the one thing a photograph of grass and sky forgives. */
+    var(--bliss-photo, none),
+    /* sun haze, upper right */
+    radial-gradient(
+      58% 34% at 76% 6%,
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0) 70%
+    ),
+    /* cloud banks */
+    radial-gradient(
+      19% 5% at 21% 21%,
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0) 72%
+    ),
+    radial-gradient(
+      12% 3.5% at 30% 18%,
+      rgba(255, 255, 255, 0.8),
+      rgba(255, 255, 255, 0) 72%
+    ),
+    radial-gradient(
+      15% 4% at 55% 13%,
+      rgba(255, 255, 255, 0.72),
+      rgba(255, 255, 255, 0) 72%
+    ),
+    radial-gradient(
+      17% 4.5% at 84% 27%,
+      rgba(255, 255, 255, 0.6),
+      rgba(255, 255, 255, 0) 72%
+    ),
+    /* the hill: a giant low ellipse, hard-stopped to transparent at its edge */
+    radial-gradient(
+      ellipse 128% 74% at 46% 126%,
+      #9ccb56 0%,
+      #83bd45 26%,
+      #6aa834 52%,
+      #55932a 72%,
+      #43801f 86%,
+      rgba(67, 128, 31, 0) 86.6%
+    ),
+    /* sky */
+    linear-gradient(
+      180deg,
+      #1a5fbf 0%,
+      #2a7ad2 22%,
+      #4c9ce4 46%,
+      #86c4ef 64%,
+      #bfe0f7 76%,
+      #e9f3fb 86%,
+      #f4f8fb 100%
+    );
+}

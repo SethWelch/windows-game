@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Dialog } from '@/components/ui/Dialog.tsx'
 import { MenuBar } from '@/components/ui/MenuBar.tsx'
 import type { AppProps } from '@/os/types.ts'
+import { player, usePlayerSettings } from '@/os/mediaPlayer.ts'
 import { wm } from '@/os/windowStore.ts'
 import {
   LIBRARY,
@@ -11,6 +12,11 @@ import {
   totalLength,
 } from './library.ts'
 import { buildPlayerMenus } from './mediaPlayerMenus.ts'
+import { RadioTuner } from './RadioTuner.tsx'
+import { SkinChooser } from './SkinChooser.tsx'
+import { SOMA_CREDIT, SOMA_HOME } from './somafm.ts'
+import type { Station } from './somafm.ts'
+import { useRadio } from './useRadio.ts'
 import { Visualizer } from './visualizer.tsx'
 import type { Visualization } from './visualizer.tsx'
 import './MediaPlayer.css'
@@ -22,47 +28,33 @@ const STEP = TICK_MS / 1000
 type View =
   | 'nowPlaying'
   | 'mediaGuide'
-  | 'copyFromCd'
   | 'mediaLibrary'
   | 'radioTuner'
-  | 'copyToCd'
   | 'skinChooser'
 
 const FEATURES: { id: View; label: string }[] = [
   { id: 'nowPlaying', label: 'Now\nPlaying' },
   { id: 'mediaGuide', label: 'Media\nGuide' },
-  { id: 'copyFromCd', label: 'Copy from\nCD' },
   { id: 'mediaLibrary', label: 'Media\nLibrary' },
   { id: 'radioTuner', label: 'Radio\nTuner' },
-  { id: 'copyToCd', label: 'Copy to CD\nor Device' },
   { id: 'skinChooser', label: 'Skin\nChooser' },
 ]
 
 /**
- * The five features that never worked without something we haven't got. These
- * messages are the ones the real player showed, and they're more honest than a
- * greyed-out button: the Media Guide really did just need the internet.
+ * The features that never worked without something we haven't got. These messages are the
+ * ones the real player showed, and they're more honest than a greyed-out button: the Media
+ * Guide really did just need the internet.
+ *
+ * Radio Tuner used to be in here and no longer is — it needed the internet too, and the
+ * internet is available. See somafm.ts. Skin Chooser has left for the same reason: there
+ * are skins now. The two CD features are gone from the bar entirely rather than sitting
+ * there greyed, because there is no drive here and there never will be — a permanently
+ * dead button is worse than no button.
  */
 const UNAVAILABLE: Partial<Record<View, { heading: string; body: string }>> = {
   mediaGuide: {
     heading: 'Cannot connect to the Internet',
     body: 'The Media Guide requires an active connection. Check your connection settings and try again.',
-  },
-  radioTuner: {
-    heading: 'Cannot connect to the Internet',
-    body: 'Radio Tuner presets are downloaded from the web. No connection is available.',
-  },
-  copyFromCd: {
-    heading: 'Please insert an audio CD',
-    body: 'There is no disc in drive D:. Insert an audio CD and the track list will appear here.',
-  },
-  copyToCd: {
-    heading: 'No writable device detected',
-    body: 'Connect a CD recorder or a portable device to copy the items in your library to it.',
-  },
-  skinChooser: {
-    heading: 'No skins installed',
-    body: 'Only the default skin is present. Visit the Windows Media website to download more.',
   },
 }
 
@@ -72,32 +64,36 @@ export function MediaPlayer({ windowId }: AppProps) {
   const [selected, setSelected] = useState(0)
   const [position, setPosition] = useState(0)
   const [playing, setPlaying] = useState(false)
-  const [volume, setVolume] = useState(70)
-  const [muted, setMuted] = useState(false)
+  // Persisted, and shared with any other Media Player window — see os/mediaPlayer.ts.
+  const { volume, muted, skin } = usePlayerSettings()
   const [shuffle, setShuffle] = useState(false)
   const [repeat, setRepeat] = useState(false)
-  const [visualization, setVisualization] = useState<Visualization>('bars')
+  const [visualization, setVisualization] = useState<Visualization>('ambience')
   const [features, setFeatures] = useState(true)
   const [about, setAbout] = useState(false)
 
+  const radio = useRadio(playing, volume, muted)
+  /** A tuned station replaces the invented library as what the transport is driving. */
+  const onAir = radio.station
+
   const track = LIBRARY[current] ?? null
-  const length = track?.length ?? 0
+  // A live stream has no length, and that is the whole reason the radio lives here: there
+  // is no duration to invent, so the seek bar simply has nothing to do.
+  const length = onAir ? 0 : (track?.length ?? 0)
 
   useEffect(() => {
-    wm.setTitle(
-      windowId,
-      track ? `${track.title} - Windows Media Player` : 'Windows Media Player',
-    )
-  }, [windowId, track])
+    const name = onAir ? onAir.title : track?.title
+    wm.setTitle(windowId, name ? `${name} - Windows Media Player` : 'Windows Media Player')
+  }, [windowId, track, onAir])
 
   /**
    * The transport reads through here rather than from the interval's closure, so
    * the timer is created once per play/pause instead of once per tick — the same
    * idiom hooks/useOutsideClick.ts uses.
    */
-  const latest = useRef({ position, current, length, repeat, shuffle })
+  const latest = useRef({ position, current, length, repeat, shuffle, onAir })
   useEffect(() => {
-    latest.current = { position, current, length, repeat, shuffle }
+    latest.current = { position, current, length, repeat, shuffle, onAir }
   })
 
   /**
@@ -109,6 +105,12 @@ export function MediaPlayer({ windowId }: AppProps) {
     if (!playing) return
     const id = window.setInterval(() => {
       const s = latest.current
+      // On the radio the transport is a clock, not a progress bar: it counts how long
+      // you have been listening and never runs out.
+      if (s.onAir) {
+        setPosition((p) => p + STEP)
+        return
+      }
       const next = s.position + STEP
       if (next < s.length) {
         setPosition(next)
@@ -139,24 +141,38 @@ export function MediaPlayer({ windowId }: AppProps) {
     setPlaying(true)
   }
 
+  /** Tuning a station starts it, and takes the transport off the library. */
+  const tune = (station: Station) => {
+    radio.tune(station)
+    setPosition(0)
+    setPlaying(true)
+  }
+
   const actions = {
     playPause: () => {
-      // Hitting play at the end of the playlist starts it over.
-      if (!playing && position >= length && length > 0) setPosition(0)
+      // Hitting play at the end of the playlist starts it over. A stream has no end.
+      if (!onAir && !playing && position >= length && length > 0) setPosition(0)
       setPlaying((p) => !p)
     },
     stop: () => {
       setPlaying(false)
       setPosition(0)
+      // Stop on the radio releases the station: leaving it tuned but silent would hold
+      // the connection open and leave the transport pointing at nothing.
+      if (onAir) radio.untune()
     },
-    previous: () => playTrack(previousIndex(current, LIBRARY.length)),
+    // Next and previous walk the station list while the radio is on, which is what a
+    // tuner's buttons are for.
+    previous: () =>
+      onAir ? radio.step(-1) : playTrack(previousIndex(current, LIBRARY.length)),
     next: () => {
+      if (onAir) return radio.step(1)
       const following = nextIndex(current, LIBRARY.length, shuffle)
       playTrack(following ?? 0)
     },
     toggleShuffle: () => setShuffle((v) => !v),
     toggleRepeat: () => setRepeat((v) => !v),
-    toggleMute: () => setMuted((v) => !v),
+    toggleMute: () => player.setMuted(!muted),
     setVisualization,
     toggleFeatures: () => setFeatures((v) => !v),
     about: () => setAbout(true),
@@ -175,7 +191,8 @@ export function MediaPlayer({ windowId }: AppProps) {
   const unavailable = UNAVAILABLE[view]
 
   return (
-    <div className="wmp">
+    // Every colour in MediaPlayer.css is derived from the variables this attribute sets.
+    <div className="wmp" data-wmp-skin={skin}>
       <MenuBar menus={menus} />
 
       <div className="xp-window-content">
@@ -201,33 +218,113 @@ export function MediaPlayer({ windowId }: AppProps) {
           <div className="wmp-view">
             {view === 'nowPlaying' && (
               <div className="wmp-nowplaying">
-                <Visualizer
-                  kind={visualization}
-                  playing={playing}
-                  track={track}
-                />
+                <div className="wmp-np-main">
+                  {/* The real player named the artist and track above the pane. Only the
+                      radio has anything true to put there — the library's titles are
+                      invented and already quoted in the status bar — so this appears when
+                      a station is on and not otherwise.
 
+                      Laid *over* the visualization rather than above it, so the station's
+                      logo and title cost the visualization no height at all. It reads
+                      fine over a bright Ambience because of the scrim behind it. */}
+                  {onAir && (
+                    <div className="wmp-np-info">
+                      {onAir.logo && (
+                        <img
+                          className="wmp-np-logo"
+                          src={onAir.logo}
+                          alt={`${onAir.title} on SomaFM`}
+                        />
+                      )}
+                      <span className="wmp-np-lines">
+                        <span className="wmp-np-artist">
+                          {radio.song?.artist ?? onAir.title}
+                        </span>
+                        <span className="wmp-np-title">
+                          {radio.error ??
+                            (radio.waiting && !radio.song
+                              ? `Connecting to ${onAir.title}...`
+                              : (radio.song?.title ?? onAir.description))}
+                        </span>
+                        <span className="wmp-np-station">{onAir.title} — SomaFM</span>
+                      </span>
+                    </div>
+                  )}
+                  <Visualizer
+                    kind={visualization}
+                    playing={playing}
+                    /* On the radio the station is the closest thing to an album there is,
+                       and unlike the invented library it has real art to show. */
+                    track={
+                      onAir
+                        ? {
+                            title: radio.song?.title ?? onAir.title,
+                            album: onAir.title,
+                            art: onAir.logoLarge,
+                          }
+                        : track
+                    }
+                  />
+                </div>
+
+                {/* The list beside the visualization is whatever the transport is
+                    driving: the library's tracks, or — once a station is on — the rest of
+                    the dial, so you can move between stations without going back to Radio
+                    Tuner. Same rows either way, because they are the same kind of thing. */}
                 <div className="wmp-playlist">
-                  <div className="wmp-playlist-head">
-                    Playlist
-                    <span>{clock(totalLength(LIBRARY))}</span>
-                  </div>
-                  <div className="wmp-playlist-body">
-                    {LIBRARY.map((t, i) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        className="wmp-track"
-                        data-selected={selected === i}
-                        data-playing={current === i}
-                        onClick={() => setSelected(i)}
-                        onDoubleClick={() => playTrack(i)}
-                      >
-                        <span className="wmp-track-title">{t.title}</span>
-                        <span className="wmp-track-time">{clock(t.length)}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {onAir ? (
+                    <>
+                      <div className="wmp-playlist-head">
+                        Radio Stations
+                        <span>{radio.stations.length}</span>
+                      </div>
+                      <div className="wmp-playlist-body">
+                        {radio.stations.map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            className="wmp-track"
+                            /* Both, and they are always the same row: with no queue to
+                               select into, the station you are listening to is the only
+                               thing either flag could mean. */
+                            data-selected={s.id === onAir.id}
+                            data-playing={s.id === onAir.id}
+                            /* One click tunes, where a track needs two. A track can be
+                               selected without being played because there is a queue to
+                               select into; a station has no queue, so "selected but not
+                               listening" would mean nothing. */
+                            onClick={() => tune(s)}
+                          >
+                            <span className="wmp-track-title">{s.title}</span>
+                            <span className="wmp-track-time">{s.listeners}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="wmp-playlist-head">
+                        Playlist
+                        <span>{clock(totalLength(LIBRARY))}</span>
+                      </div>
+                      <div className="wmp-playlist-body">
+                        {LIBRARY.map((t, i) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            className="wmp-track"
+                            data-selected={selected === i}
+                            data-playing={current === i}
+                            onClick={() => setSelected(i)}
+                            onDoubleClick={() => playTrack(i)}
+                          >
+                            <span className="wmp-track-title">{t.title}</span>
+                            <span className="wmp-track-time">{clock(t.length)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -262,6 +359,12 @@ export function MediaPlayer({ windowId }: AppProps) {
               </div>
             )}
 
+            {view === 'radioTuner' && <RadioTuner tuned={onAir} onTune={tune} />}
+
+            {view === 'skinChooser' && (
+              <SkinChooser current={skin} onApply={player.setSkin} />
+            )}
+
             {unavailable && (
               <div className="wmp-unavailable">
                 <p className="wmp-unavailable-head">{unavailable.heading}</p>
@@ -283,10 +386,12 @@ export function MediaPlayer({ windowId }: AppProps) {
             step={0.25}
             value={Math.min(position, length)}
             aria-label="Seek"
+            // Nothing to seek within on a live stream, and the real player greyed it too.
+            disabled={!!onAir}
             onChange={(e) => setPosition(Number(e.target.value))}
           />
           <span className="wmp-time">
-            {clock(position)} / {clock(length)}
+            {onAir ? `${clock(position)} live` : `${clock(position)} / ${clock(length)}`}
           </span>
         </div>
 
@@ -383,10 +488,8 @@ export function MediaPlayer({ windowId }: AppProps) {
             max={100}
             value={muted ? 0 : volume}
             aria-label="Volume"
-            onChange={(e) => {
-              setVolume(Number(e.target.value))
-              setMuted(false)
-            }}
+            // `setVolume` unmutes on its own, as the tray's does.
+            onChange={(e) => player.setVolume(Number(e.target.value))}
           />
 
           <span className="wmp-gap" />
@@ -413,11 +516,39 @@ export function MediaPlayer({ windowId }: AppProps) {
       </div>
 
       <div className="wmp-status">
-        <span>{playing ? 'Playing' : position > 0 ? 'Paused' : 'Ready'}</span>
         <span>
-          {track ? `${track.artist} — ${track.album}` : ''}
+          {radio.error
+            ? 'Error'
+            : radio.waiting
+              ? 'Buffering'
+              : playing
+                ? 'Playing'
+                : position > 0
+                  ? 'Paused'
+                  : 'Ready'}
         </span>
-        <span>{track ? `${track.bitrate} Kbps` : ''}</span>
+        <span>
+          {onAir ? (
+            /* Credited wherever a stream of theirs is what you are hearing, not only on
+               the tab that lists them. */
+            <>
+              {onAir.title} &mdash;{' '}
+              <a
+                className="wmp-status-link"
+                href={SOMA_HOME}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {SOMA_CREDIT}
+              </a>
+            </>
+          ) : track ? (
+            `${track.artist} — ${track.album}`
+          ) : (
+            ''
+          )}
+        </span>
+        <span>{onAir ? 'Live stream' : track ? `${track.bitrate} Kbps` : ''}</span>
       </div>
 
       {about && (
@@ -428,9 +559,9 @@ export function MediaPlayer({ windowId }: AppProps) {
             Version 9.00.00.2980
             <br />
             <br />
-            There is no audio device here and the library is invented — but the
-            transport, the playlist and the visualizations are all real, and the
-            bars bounce in CSS so they cost nothing to watch.
+            The library is invented and the transport that runs it is a stopwatch — but
+            Radio Tuner is real, and plays real stations from SomaFM. The visualizations
+            are real too; the bars bounce in CSS, so they cost nothing to watch.
           </div>
           <div className="xp-dialog-buttons">
             <button

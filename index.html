@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/src/images/icons/windowsxp-32.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Send no Referer to anyone. This is load-bearing rather than a privacy nicety:
+      SomaFM's Icecast has hotlink protection and answers a request carrying a Referer
+      with 403, so every station in Radio Tuner failed instantly until this was here. A
+      media element has no `referrerPolicy` attribute of its own — `<img>` and `<iframe>`
+      do, `<audio>` does not — so the document policy is the only lever there is. See
+      src/apps/mediaPlayer/somafm.ts.
+    -->
+    <meta name="referrer" content="no-referrer" />
     <title>Windows XP</title>
   </head>
   <body>

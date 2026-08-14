@@ -55,7 +55,64 @@ const VERSION = 1
 const KEY = 'xp:fs'
 
 /** The desktop's My Computer shortcut. */
+/** The extension a name sorts and types under, lowercased, or '' if it hasn't one. */
+export function extensionOf(name: string): string {
+  const dot = name.lastIndexOf('.')
+  return dot > 0 ? name.slice(dot + 1).toLowerCase() : ''
+}
+
+/** The file types this shell can actually produce, by extension. */
+const FILE_TYPES: Record<string, string> = {
+  txt: 'Text Document',
+  rtf: 'Rich Text Document',
+  bmp: 'Bitmap Image',
+  png: 'PNG Image',
+  wav: 'Wave Sound',
+}
+
+/**
+ * What the shell calls a node in a Type column — Explorer's details pane, the Recycle
+ * Bin, and Arrange Icons By.
+ *
+ * `kind` alone is not enough to be useful, which is the whole reason this exists.
+ * Every icon on a stock desktop is a shortcut, so grouping by `kind` puts all seven in
+ * one bucket and produces exactly the same order as grouping by name. What distinguishes
+ * them is what the shell already distinguishes elsewhere: the `system` items are folders
+ * rather than links, and a file's type comes from its extension.
+ */
+export function typeLabel(node: FsNode): string {
+  if (node.system) return 'System Folder'
+  if (node.kind === 'folder') return 'File Folder'
+  if (node.kind === 'shortcut') return 'Shortcut'
+  const ext = extensionOf(node.name)
+  return FILE_TYPES[ext] ?? (ext ? `${ext.toUpperCase()} File` : 'File')
+}
+
+/**
+ * A node's size in bytes.
+ *
+ * Shortcuts get a nominal 512, which is roughly what a `.lnk` occupied on disk — they
+ * have no content of their own, and reporting 0 bytes for something that plainly exists
+ * reads as a bug. Folders report their own content length, which is nothing.
+ */
+export const sizeOf = (node: FsNode): number =>
+  node.kind === 'shortcut' ? 512 : (node.content?.length ?? 0)
+
 export const MY_COMPUTER_ID = 'sc-mycomputer'
+
+/**
+ * The Control Panel, which really was a folder — XP's shell put it inside My Computer and
+ * opened it in an Explorer window. Ours is the same: a system folder with no children,
+ * because Explorer renders its category view instead of listing it.
+ */
+export const CONTROL_PANEL_ID = 'control-panel'
+
+/**
+ * A Control Panel category. Also a folder, for the same reason its parent is: navigating
+ * to it gives Back, Up, the address bar and the window title without any of them knowing
+ * this is a category page rather than a directory.
+ */
+export const CP_APPEARANCE_ID = 'cp-appearance'
 
 /**
  * The one seeded item the shell will let you throw away.
@@ -91,11 +148,38 @@ const spamShortcut = (): FsNode => ({
   modified: Date.now(),
 })
 
+const buddyShortcut = (): FsNode => ({
+  id: 'sc-buddy',
+  parentId: DESKTOP_ID,
+  kind: 'shortcut',
+  name: 'Bongo Buddy',
+  target: { kind: 'app', appId: 'buddy' },
+  modified: Date.now(),
+})
+
 /**
  * Deliberately parentless. `getChildren` matches on `parentId`, so a detached
  * container can never turn up inside My Computer — the bin is somewhere things go,
  * not somewhere you can browse to.
  */
+const controlPanelNode = (): FsNode => ({
+  id: CONTROL_PANEL_ID,
+  parentId: ROOT_ID,
+  kind: 'folder',
+  name: 'Control Panel',
+  system: true,
+  modified: Date.now(),
+})
+
+const appearanceNode = (): FsNode => ({
+  id: CP_APPEARANCE_ID,
+  parentId: CONTROL_PANEL_ID,
+  kind: 'folder',
+  name: 'Appearance and Themes',
+  system: true,
+  modified: Date.now(),
+})
+
 const recycleBinNode = (): FsNode => ({
   id: RECYCLE_ID,
   parentId: null,
@@ -134,6 +218,8 @@ function seed(): FsState {
         name: 'My Documents',
         system: true,
       }),
+      [CONTROL_PANEL_ID]: controlPanelNode(),
+      [CP_APPEARANCE_ID]: appearanceNode(),
       [MY_COMPUTER_ID]: myComputerShortcut(),
       'sc-mydocs': n({
         id: 'sc-mydocs',
@@ -159,6 +245,7 @@ function seed(): FsState {
         target: { kind: 'app', appId: 'notepad' },
       }),
       'sc-spam': spamShortcut(),
+      'sc-buddy': buddyShortcut(),
       'sc-netscape': n({
         id: 'sc-netscape',
         parentId: DESKTOP_ID,
@@ -199,6 +286,10 @@ function load(): FsState {
     // Trees saved before the Recycle Bin existed have no container for it. Adding
     // one beats discarding somebody's files over a missing folder.
     parsed.nodes[RECYCLE_ID] ??= recycleBinNode()
+    // Same for the Control Panel: a tree saved before it existed has no folder for it,
+    // and the Start menu's entry would open an Explorer window pointed at nothing.
+    parsed.nodes[CONTROL_PANEL_ID] ??= controlPanelNode()
+    parsed.nodes[CP_APPEARANCE_ID] ??= appearanceNode()
 
     // Migrations run once and then record that they have. Adding the shortcut on
     // every load instead would resurrect it every time somebody deleted it — so the
@@ -245,6 +336,29 @@ export function usePersisted(): boolean {
     () => persistOk,
     () => persistOk,
   )
+}
+
+/**
+ * Moves a node out of the Recycle Bin and back to where it came from, without
+ * committing — `restore` does one item, `repair` does the lot in a single commit.
+ */
+function unrecycle(id: string): boolean {
+  const node = state.nodes[id]
+  if (!node || node.parentId !== RECYCLE_ID) return false
+  const home = node.restore?.parentId ?? DESKTOP_ID
+  const parent = state.nodes[home]
+  // The Desktop is the fallback when the original folder is gone — or is itself in
+  // the bin, which happens if you delete a file and then delete the folder it came
+  // from. Restoring into that folder would put the item back in the bin.
+  const usable =
+    parent?.kind === 'folder' && !isAncestor(id, home) && !isAncestor(RECYCLE_ID, home)
+  const target = usable ? home : DESKTOP_ID
+  node.parentId = target
+  // Something else may have taken the name in the meantime — but not this node itself.
+  node.name = uniqueName(target, node.name, id)
+  delete node.restore
+  node.modified = Date.now()
+  return true
 }
 
 let state = load()
@@ -313,9 +427,18 @@ export function isAncestor(maybeAncestor: string, id: string): boolean {
   return false
 }
 
-function uniqueName(parentId: string, desired: string): string {
+/**
+ * A name no sibling is already using.
+ *
+ * `exceptId` is not optional bookkeeping: callers that move a node reparent it before
+ * naming it, so without excluding the node itself it collides with its own old name
+ * and every move or restore comes back as "thing (2)".
+ */
+function uniqueName(parentId: string, desired: string, exceptId?: string): string {
   const taken = new Set(
-    getChildren(parentId).map((n) => n.name.toLowerCase()),
+    getChildren(parentId)
+      .filter((n) => n.id !== exceptId)
+      .map((n) => n.name.toLowerCase()),
   )
   if (!taken.has(desired.toLowerCase())) return desired
 
@@ -431,25 +554,45 @@ export const fs = {
 
   /** Put it back where it came from, or on the Desktop if that folder is gone. */
   restore(id: string): boolean {
-    const node = state.nodes[id]
-    if (!node || node.parentId !== RECYCLE_ID) return false
-    const home = node.restore?.parentId ?? DESKTOP_ID
-    const parent = state.nodes[home]
-    // The Desktop is the fallback when the original folder is gone — or is itself
-    // in the bin, which happens if you delete a file and then delete the folder it
-    // came from. Restoring into that folder would put the item back in the bin.
-    const usable =
-      parent?.kind === 'folder' &&
-      !isAncestor(id, home) &&
-      !isAncestor(RECYCLE_ID, home)
-    const target = usable ? home : DESKTOP_ID
-    node.parentId = target
-    // Something else may have taken the name in the meantime.
-    node.name = uniqueName(target, node.name)
-    delete node.restore
-    node.modified = Date.now()
+    if (!unrecycle(id)) return false
     commit()
     return true
+  },
+
+  /**
+   * What a power cycle puts right. Everything still in the Recycle Bin goes back
+   * where it came from, and anything the machine shipped with that has gone missing
+   * is rebuilt from the seed.
+   *
+   * The fiction is that the POST repairs the install, so no amount of deleting can
+   * leave the desktop permanently broken — which matters because emptying the bin
+   * with My Computer in it used to be a one-way door once you'd reloaded the page.
+   * Files and folders *you* made are yours: they stay where they are, and if you
+   * destroyed one for real by emptying the bin, it does not come back. The machine
+   * can rebuild what it shipped with. It can't rebuild what you made and then
+   * deliberately threw out.
+   *
+   * One commit for the lot, so the desktop repaints once.
+   */
+  repair(): { rebuilt: number; restored: number } {
+    // Seeded structure first: a bin item can only go home if its folder is there.
+    const shipped = seed().nodes
+    const rebuilt = Object.keys(shipped).filter((id) => !state.nodes[id])
+    for (const id of rebuilt) state.nodes[id] = shipped[id]
+
+    // Then empty the bin back to source. Repeated passes rather than one, because an
+    // item's home folder can itself be sitting in the bin — delete a file, then delete
+    // the folder it came from, and the file only goes home after the folder does. Each
+    // pass that moves something may unblock another; stop when one moves nothing.
+    let restored = 0
+    for (;;) {
+      const moved = getChildren(RECYCLE_ID).filter((node) => unrecycle(node.id)).length
+      if (!moved) break
+      restored += moved
+    }
+
+    if (rebuilt.length || restored) commit()
+    return { rebuilt: rebuilt.length, restored }
   },
 
   /**
@@ -505,7 +648,7 @@ export const fs = {
     // Moving a folder inside itself would orphan the whole subtree.
     if (isAncestor(id, newParentId)) return false
     node.parentId = newParentId
-    node.name = uniqueName(newParentId, node.name)
+    node.name = uniqueName(newParentId, node.name, id)
     node.modified = Date.now()
     commit()
     return true

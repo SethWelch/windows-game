@@ -1,0 +1,189 @@
+/* Netscape Composer. Two panes over a draggable divider, plus the toolbar that
+   chooses which of them you get. */
+
+.comp {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ---- Toolbar ---- */
+
+.comp-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px;
+  background: var(--face);
+  border-bottom: 1px solid var(--shadow);
+}
+.comp-toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+/* The three layouts, as one segmented group — they are a single choice. */
+.comp-views {
+  display: flex;
+  gap: 2px;
+}
+
+.comp-viewbtn {
+  padding: 2px 9px 3px;
+  cursor: default;
+  border: 1px solid;
+  border-color: var(--face-light) var(--frame-edge) var(--frame-edge) var(--face-light);
+  background: var(--face);
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+}
+.comp-viewbtn:hover:not(:disabled) {
+  background: var(--face-light);
+}
+/* Pressed in, which is how a toolbar showed you the current mode. */
+.comp-viewbtn[aria-pressed='true'] {
+  border-color: var(--frame-edge) var(--face-light) var(--face-light) var(--frame-edge);
+  background: var(--face-light);
+}
+.comp-viewbtn:disabled {
+  color: var(--disabled-fg);
+  /* Etched, as XP drew disabled toolbar text. */
+  text-shadow: 1px 1px 0 var(--face-light);
+}
+
+/* ---- The split ---- */
+
+/* The flex box itself comes from `xp-window-content`, which is already
+   `flex: 1 1 auto; min-height: 0; display: flex; overflow: hidden` — repeating any of
+   it here would just be a second copy to keep in step. */
+.comp-body {
+  /* Set inline by the component, and written directly by the divider drag. */
+  --comp-ratio: 0.5;
+}
+
+/* Proportional grow with a zero basis, so the divider's own width comes out of
+   neither pane and the ratio means what it says. */
+.comp-source,
+.comp-preview {
+  min-width: 0;
+  flex-shrink: 1;
+  flex-basis: 0;
+  display: flex;
+  flex-direction: column;
+}
+.comp-source {
+  flex-grow: var(--comp-ratio);
+}
+.comp-preview {
+  flex-grow: calc(1 - var(--comp-ratio));
+}
+
+.comp-divider {
+  flex: 0 0 4px;
+  cursor: ew-resize;
+  background: var(--face);
+  border-left: 1px solid var(--face-light);
+  border-right: 1px solid var(--shadow);
+}
+
+/* One pane only: the divider has nothing left to divide. */
+.comp-body[data-view='source'] > .comp-preview,
+.comp-body[data-view='source'] > .comp-divider,
+.comp-body[data-view='preview'] > .comp-source,
+.comp-body[data-view='preview'] > .comp-divider {
+  display: none;
+}
+
+/* An iframe swallows the pointer events over it, which would end a divider drag the
+   moment the cursor crossed into the preview. Set for the duration of the gesture by
+   Composer.tsx — see the comment on `onDividerDown`. */
+.comp-body[data-dragging='true'] .comp-frame {
+  pointer-events: none;
+}
+
+/* ---- Source pane ---- */
+
+.comp-tabs {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 2px;
+  padding: 3px 3px 0;
+  background: var(--face);
+}
+.comp-tab {
+  padding: 2px 10px 3px;
+  cursor: default;
+  border: 1px solid var(--shadow);
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, #f6f5ee 0%, #e4e1d2 100%);
+  font: var(--xp-fs) var(--xp-font);
+  color: #000;
+}
+.comp-tab[aria-selected='true'] {
+  background: #fff;
+  font-weight: bold;
+}
+
+.comp-edit {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+  outline: 0;
+  resize: none;
+  padding: 2px 3px;
+  background: #fff;
+  color: #000;
+  font: 12px/1.35 var(--xp-mono);
+  /* Undoes the global arrow cursor, as Notepad's edit area does. */
+  cursor: text;
+  /* `wrap="off"` handles the wrapping; this is what gives it the scrollbar. */
+  overflow: auto;
+  tab-size: 2;
+}
+
+/* ---- Preview pane ---- */
+
+.comp-preview {
+  /* Sunken to match the edit area, so the two panes read as the same kind of thing. */
+  border: 1px solid;
+  border-color: var(--shadow) #fff #fff var(--shadow);
+  /* The frame paints to the edge; without this its corners sit over the bevel. */
+  overflow: hidden;
+  background: #c0c0c0;
+}
+
+/* The popped-out window: same frame, filling the whole client area. */
+.comp-previewwin {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  background: #c0c0c0;
+}
+
+.comp-frame {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  background: #c0c0c0;
+}
+
+/* ---- Status bar ---- */
+
+/* The document name takes the slack; the two counts stay their own width. */
+.comp-status-doc {
+  flex: 1 1 auto;
+}
+.comp .xp-statusbar-cell:not(.comp-status-doc) {
+  flex: 0 0 auto;
+  min-width: 128px;
+}
+
+.comp-about {
+  max-width: 320px;
+  line-height: 1.5;
+}

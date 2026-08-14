@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react'
 import { audio } from '@/os/audio.ts'
 import { boot } from '@/os/boot.ts'
 import { wm } from '@/os/windowStore.ts'
+import { buddy } from '@/os/buddy.ts'
+import { discard } from '@/os/discard.ts'
+import { popups } from '@/os/popups.ts'
+import { screensaver } from '@/os/screensaver.ts'
 import {
   clockRows,
   hardwareRows,
@@ -43,6 +47,17 @@ export function BootScreen() {
   useEffect(() => {
     // A machine that has just booted has nothing running on it.
     wm.closeAll()
+    // Program-owned items in the bin belong to a session that is over — the Solitaire
+    // deal that produced those cards is gone, so nothing could reclaim them. Files are
+    // left alone: repairing the install belongs to a real power-off, not to a restart.
+    discard.clear()
+    // And the desktop assistant, who put himself in startup. Cleared and re-added
+    // rather than carried over: his timers don't survive a machine being off.
+    buddy.onBoot()
+    // And the advertisements, along with whatever was still queued to arrive.
+    popups.onBoot()
+    // And any screen saver, plus its idle poll — module state outlives a POST.
+    screensaver.onBoot()
 
     const timers: number[] = []
     for (let step = 1; step <= GROUPS; step++) {

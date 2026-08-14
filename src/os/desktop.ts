@@ -11,29 +11,54 @@ export const CELL_W = 80
 export const CELL_H = 78
 export const GRID_X = 4
 export const GRID_Y = 8
+/**
+ * Where an icon's graphic sits inside its cell, from the cell's top-left. Horizontally
+ * it is centred, so only the vertical needs stating: 22px covers DesktopIcon.css's 3px
+ * padding plus half of the 32px artwork. Anything that has to line something up with an
+ * icon — Bongo's hand, for one — measures from here.
+ */
+export const ICON_CY = 22
 
 const KEY = 'xp:desktop'
 
 type Positions = Record<string, { col: number; row: number }>
 
-function load(): Positions {
+/** What Arrange Icons By toggles, alongside the positions themselves. */
+interface Options {
+  /** Icons close up after every drop, so the grid never has holes in it. */
+  autoArrange: boolean
+  /** Unticking this hides the lot, as it did. */
+  showIcons: boolean
+}
+
+const DEFAULT_OPTIONS: Options = { autoArrange: false, showIcons: true }
+
+function load(): { positions: Positions; options: Options } {
   try {
     const raw = localStorage.getItem(KEY)
-    if (!raw) return {}
-    const parsed = JSON.parse(raw) as { positions?: Positions }
-    return parsed.positions ?? {}
+    if (!raw) return { positions: {}, options: DEFAULT_OPTIONS }
+    const parsed = JSON.parse(raw) as { positions?: Positions; options?: Partial<Options> }
+    return {
+      positions: parsed.positions ?? {},
+      options: {
+        autoArrange: parsed.options?.autoArrange === true,
+        showIcons: parsed.options?.showIcons !== false,
+      },
+    }
   } catch {
-    return {}
+    return { positions: {}, options: DEFAULT_OPTIONS }
   }
 }
 
-let positions = load()
+const stored = load()
+let positions = stored.positions
+let options = stored.options
 const listeners = new Set<() => void>()
 
 function commit() {
   positions = { ...positions }
   try {
-    localStorage.setItem(KEY, JSON.stringify({ positions }))
+    localStorage.setItem(KEY, JSON.stringify({ positions, options }))
   } catch {
     // Layout just won't survive a reload.
   }
@@ -158,6 +183,52 @@ export const desktop = {
     return desktop.moveMany([{ id, col, row }], occupied).get(id) ?? { col, row }
   },
 
+  /**
+   * Lay the given ids out in that exact order, filling column-major from the top-left —
+   * down a column then across, which is the order XP filled the desktop in and the same
+   * order `layout` uses for anything unplaced.
+   *
+   * This is what Arrange Icons By does: the caller sorts, this places.
+   */
+  arrange(ids: string[]) {
+    const limit = maxRow()
+    let col = 0
+    let row = 0
+    for (const id of ids) {
+      positions[id] = { col, row }
+      row++
+      if (row > limit) {
+        row = 0
+        col++
+      }
+    }
+    commit()
+  },
+
+  /**
+   * Close the gaps without reordering anything: ids are taken in the order they
+   * currently read on screen and packed back down from the top-left. What Auto Arrange
+   * does after every drop.
+   */
+  compact(ids: string[]) {
+    const cells = layout(ids)
+    const inReadingOrder = [...ids].sort((a, b) => {
+      const pa = cells.get(a)
+      const pb = cells.get(b)
+      if (!pa || !pb) return 0
+      return pa.col - pb.col || pa.row - pb.row
+    })
+    desktop.arrange(inReadingOrder)
+  },
+
+  options: () => options,
+
+  setOption<K extends keyof Options>(key: K, value: Options[K]) {
+    if (options[key] === value) return
+    options = { ...options, [key]: value }
+    commit()
+  },
+
   /** Drop stored positions for ids that no longer exist. */
   prune(validIds: Set<string>) {
     let changed = false
@@ -173,6 +244,17 @@ export const desktop = {
   bump() {
     commit()
   },
+}
+
+export function useDesktopOptions(): Options {
+  return useSyncExternalStore(
+    (l) => {
+      listeners.add(l)
+      return () => listeners.delete(l)
+    },
+    () => options,
+    () => options,
+  )
 }
 
 export function usePositions(): Positions {

@@ -13,6 +13,6 @@ export const calculatorApp: AppDefinition = {
   // choice about fidelity rather than a layout constraint.
   resizable: false,
   maximizable: false,
-  startMenuSection: 'programs',
+  startMenuSection: 'pinned',
   startMenuFolder: ['Accessories'],
 }

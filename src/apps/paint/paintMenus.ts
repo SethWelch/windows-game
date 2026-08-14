@@ -11,6 +11,7 @@ export interface PaintActions {
   invert: () => void
   attributes: () => void
   clearImage: () => void
+  setAsBackground: () => void
   about: () => void
   togglePane: (pane: 'tools' | 'colors' | 'status') => void
 }
@@ -32,7 +33,11 @@ export const buildPaintMenus = (a: PaintActions, f: PaintFlags): Menu[] => [
       { kind: 'separator' },
       { id: 'print', label: '&Print...', accelerator: 'Ctrl+P', disabled: true },
       { kind: 'separator' },
-      { id: 'wallpaper', label: 'Set As &Background (Tiled)', disabled: true },
+      {
+        id: 'wallpaper',
+        label: 'Set As &Background (Tiled)',
+        onSelect: a.setAsBackground,
+      },
       { kind: 'separator' },
       { id: 'exit', label: 'E&xit', onSelect: a.exit },
     ],

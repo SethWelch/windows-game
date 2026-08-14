@@ -1,4 +1,14 @@
-/* Windows XP "Luna" design tokens. Every magic hex in the project lives here. */
+/* Windows XP "Luna" design tokens. Every magic hex in the project lives here.
+ *
+ * `:root` is Luna Blue, the default. The two blocks at the bottom are the other
+ * schemes Luna shipped — Olive Green and Silver — selected by `data-scheme` on the
+ * root element from os/display.ts. Adding a scheme means overriding the values in the
+ * "Scheme" section below and nothing else: anything outside that section is shared by
+ * all three, which is why the shell's gradients had to become tokens to begin with.
+ *
+ * The scheme colours are matched by eye against screenshots rather than sampled from
+ * the original bitmaps, so they are close rather than exact.
+ */
 :root {
   /* Bundled first (see fonts.css) so the look never depends on what the viewer has
      installed. System copies sit behind them as fallbacks for glyphs the subset
@@ -55,7 +65,196 @@
     #7c9ede 100%
   );
 
+  /* ---- Scheme: the shell's own chrome ----
+     The taskbar, Start button, tray and Start menu, so a colour scheme can reach
+     them. Everything above is Luna Blue's version of the same idea. */
+
+  --taskbar-bg: linear-gradient(
+    180deg,
+    #1f2f86 0%,
+    #3168d0 3%,
+    #4a90e8 6%,
+    #2f6fd8 10%,
+    #2361d4 12%,
+    #2361d4 88%,
+    #1f56c0 94%,
+    #1a49ad 97%,
+    #123f9e 100%
+  );
+  --taskbar-rim: #5a9bf0;
+
+  /* The Start button keeps its green in all three schemes, as it did. */
+  --start-bg: linear-gradient(
+    180deg,
+    #8ec765 0%,
+    #63ad3c 4%,
+    #4ea128 11%,
+    #499d21 20%,
+    #57ac2c 31%,
+    #6dbe3b 42%,
+    #63b634 50%,
+    #4ba024 60%,
+    #3d8d19 72%,
+    #2f7a13 84%,
+    #22630e 94%,
+    #1a5108 100%
+  );
+
+  --tray-bg: linear-gradient(
+    180deg,
+    #1290e8 0%,
+    #12a4f0 6%,
+    #0e83dc 40%,
+    #1290e8 90%,
+    #1aa0f2 100%
+  );
+  --tray-edge: #0c5cae;
+  --tray-rim: #3fb0f5;
+
+  --sm-rule: #e97b1a;
+  --sm-right: linear-gradient(180deg, #dae7f8 0%, #c9ddf6 100%);
+  --sm-right-edge: #a9c3e8;
+  --sm-heading: #0b3f8f;
+  --sm-logoff: linear-gradient(180deg, #4aa63c 0%, #2b7d1f 100%);
+
   /* Metrics. Referenced from JS via os/constants.ts — keep the two in sync. */
   --taskbar-h: 30px;
   --titlebar-h: 30px;
+}
+
+/* ---- Olive Green ----
+   Luna's warm scheme: the blues go to a dusty sage, and the orange rule in the Start
+   menu goes with them because it no longer has a blue to sit against. */
+:root[data-scheme='olive'] {
+  --frame-body: #7a8a5a;
+  --frame-edge: #47522e;
+  --frame-body-inactive: #b3bb9c;
+  --frame-edge-inactive: #8d9678;
+  --field-border: #a3ab8c;
+  --menu-hi: #7a8a5a;
+  --sel-blue: #3f4a26;
+
+  --title-active: linear-gradient(
+    180deg,
+    #c3cf9f 0%,
+    #a4b47a 4%,
+    #91a463 12%,
+    #85995a 34%,
+    #8ba05f 58%,
+    #a1b276 78%,
+    #93a765 90%,
+    #7a8a5a 100%
+  );
+  --title-inactive: linear-gradient(
+    180deg,
+    #d8ddc6 0%,
+    #c4ccae 4%,
+    #bcc4a4 12%,
+    #b7bf9e 34%,
+    #bcc4a4 58%,
+    #c8cfb6 78%,
+    #c0c8aa 90%,
+    #b3bb9c 100%
+  );
+
+  --taskbar-bg: linear-gradient(
+    180deg,
+    #4a5230 0%,
+    #7d8a55 3%,
+    #97a46b 6%,
+    #7a8850 10%,
+    #6f7d47 12%,
+    #6f7d47 88%,
+    #616e3c 94%,
+    #545f33 97%,
+    #47522e 100%
+  );
+  --taskbar-rim: #aeba86;
+
+  --tray-bg: linear-gradient(
+    180deg,
+    #8b9860 0%,
+    #99a76c 6%,
+    #7e8b54 40%,
+    #8b9860 90%,
+    #a3b174 100%
+  );
+  --tray-edge: #4f5a30;
+  --tray-rim: #bcc78f;
+
+  --sm-rule: #d8a12a;
+  --sm-right: linear-gradient(180deg, #eef0e0 0%, #e2e6cd 100%);
+  --sm-right-edge: #c2caa8;
+  --sm-heading: #4d5a2c;
+}
+
+/* ---- Silver ----
+   The grey one. Everything desaturates, and the titlebar's gloss has to carry the
+   whole effect because there is no hue left to do it. */
+:root[data-scheme='silver'] {
+  --face: #eeeef2;
+  --face-light: #f6f6f9;
+  --frame-body: #9a9aae;
+  --frame-edge: #6f6f81;
+  --frame-body-inactive: #c4c4d0;
+  --frame-edge-inactive: #a0a0ae;
+  --shadow: #b0b0bc;
+  --dkshadow: #75757f;
+  --field-border: #9c9cae;
+  --menu-hi: #7b7b91;
+  --sel-blue: #45454f;
+  --disabled-fg: #8c8c96;
+
+  --title-active: linear-gradient(
+    180deg,
+    #e2e2ea 0%,
+    #c8c8d6 4%,
+    #b4b4c6 12%,
+    #a6a6ba 34%,
+    #adadc0 58%,
+    #c6c6d6 78%,
+    #b2b2c4 90%,
+    #9a9aae 100%
+  );
+  --title-inactive: linear-gradient(
+    180deg,
+    #f0f0f4 0%,
+    #e0e0e8 4%,
+    #d8d8e2 12%,
+    #d2d2de 34%,
+    #d8d8e2 58%,
+    #e6e6ee 78%,
+    #dcdce6 90%,
+    #c4c4d0 100%
+  );
+
+  --taskbar-bg: linear-gradient(
+    180deg,
+    #6f6f81 0%,
+    #a8a8ba 3%,
+    #c2c2d2 6%,
+    #a4a4b8 10%,
+    #9a9aae 12%,
+    #9a9aae 88%,
+    #8b8b9e 94%,
+    #7d7d8f 97%,
+    #6f6f81 100%
+  );
+  --taskbar-rim: #d2d2de;
+
+  --tray-bg: linear-gradient(
+    180deg,
+    #adadc0 0%,
+    #bcbccc 6%,
+    #a0a0b4 40%,
+    #adadc0 90%,
+    #c4c4d4 100%
+  );
+  --tray-edge: #75757f;
+  --tray-rim: #dcdce6;
+
+  --sm-rule: #9a9aae;
+  --sm-right: linear-gradient(180deg, #f2f2f6 0%, #e6e6ee 100%);
+  --sm-right-edge: #c4c4d0;
+  --sm-heading: #4a4a58;
 }

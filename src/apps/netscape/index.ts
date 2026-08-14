@@ -11,5 +11,9 @@ export const netscapeApp: AppDefinition = {
   defaultSize: { width: 728, height: 580 },
   minSize: { width: 420, height: 300 },
   showOnDesktop: true,
+  // Pinned *and* filed under All Programs, which are two different lists — see the
+  // comment on `allPrograms` in os/registry.ts. The folder is the one the installer
+  // made, and Composer is in it too.
   startMenuSection: 'pinned',
+  startMenuFolder: ['Netscape Communicator'],
 }

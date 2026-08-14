@@ -3,14 +3,40 @@
 
    Prefixed `wmp-` because none of it is shared with the shell's own chrome. */
 
+/* ---- Skin ---- */
+
+/*
+ * Every colour in this file is one hue at some saturation and lightness, so the whole
+ * palette is driven by three variables rather than by forty hex literals. Each colour
+ * keeps its *own* offset from the base hue — `calc(var(--wmp-hue) + -17deg)` and so on —
+ * which is what lets a skin rotate the lot without flattening the cyan highlights into
+ * the same blue as the panels. At the default values below every colour evaluates back to
+ * the exact byte it used to be.
+ *
+ * `--wmp-sat` multiplies saturation, so 0 is greyscale and that is how a silver skin is
+ * made. `--wmp-lift` adds to lightness for a skin that sits brighter or darker overall.
+ *
+ * Skins live in skins.ts and are applied by stamping `data-wmp-skin` — the same trick
+ * `data-scheme` uses for Luna's colour schemes, and it works on the preview tiles in the
+ * Skin Chooser for free, because they carry the attribute too.
+ */
+[data-wmp-skin] {
+  --wmp-hue: 218deg;
+  --wmp-sat: 1;
+  --wmp-lift: 0%;
+  /* The transport readout, which was green on every skin the real player shipped. */
+  --wmp-readout: #8ef0a8;
+  --wmp-radius: 0px;
+}
+
 .wmp {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
   user-select: none;
-  background: #0b1330;
-  color: #dce8fb;
+  background: hsl(calc(var(--wmp-hue) + 9.027deg) calc(62.71% * var(--wmp-sat)) calc(11.57% + var(--wmp-lift)));
+  color: hsl(calc(var(--wmp-hue) + -1.226deg) calc(79.49% * var(--wmp-sat)) calc(92.35% + var(--wmp-lift)));
 }
 
 .wmp-body {
@@ -28,8 +54,8 @@
   flex-direction: column;
   gap: 1px;
   padding: 2px;
-  background: linear-gradient(180deg, #23417f 0%, #16294f 100%);
-  border-right: 1px solid #0a1330;
+  background: linear-gradient(180deg, hsl(calc(var(--wmp-hue) + 2.435deg) calc(56.79% * var(--wmp-sat)) calc(31.76% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + 2deg) calc(56.44% * var(--wmp-sat)) calc(19.8% + var(--wmp-lift))) 100%);
+  border-right: 1px solid hsl(calc(var(--wmp-hue) + 7.789deg) calc(65.52% * var(--wmp-sat)) calc(11.37% + var(--wmp-lift)));
 }
 
 .wmp-feature {
@@ -44,7 +70,7 @@
   border: 1px solid transparent;
   border-radius: 3px;
   background: none;
-  color: #cfe0f8;
+  color: hsl(calc(var(--wmp-hue) + -2.878deg) calc(74.55% * var(--wmp-sat)) calc(89.22% + var(--wmp-lift)));
   font: var(--xp-fs) / 1.2 var(--xp-font);
 }
 .wmp-feature:hover {
@@ -54,8 +80,8 @@
 /* The current feature lights up and squares off its right edge, the way the real
    button ran into the panel it opened. */
 .wmp-feature[data-active='true'] {
-  background: linear-gradient(90deg, #3f74d4 0%, #2a5aa8 100%);
-  border-color: #6f9ee8;
+  background: linear-gradient(90deg, hsl(calc(var(--wmp-hue) + 0.6577deg) calc(63.4% * var(--wmp-sat)) calc(53.92% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + -0.8571deg) calc(60% * var(--wmp-sat)) calc(41.18% + var(--wmp-lift))) 100%);
+  border-color: hsl(calc(var(--wmp-hue) + -1.306deg) calc(72.46% * var(--wmp-sat)) calc(67.25% + var(--wmp-lift)));
   color: #fff;
   font-weight: bold;
 }
@@ -86,8 +112,33 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  background: radial-gradient(120% 90% at 50% 100%, #14224a 0%, #05091c 100%);
-  border: 1px solid #2b3f74;
+  background: radial-gradient(120% 90% at 50% 100%, hsl(calc(var(--wmp-hue) + 6.444deg) calc(57.45% * var(--wmp-sat)) calc(18.43% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + 11.57deg) calc(69.7% * var(--wmp-sat)) calc(6.471% + var(--wmp-lift))) 100%);
+  border: 1px solid hsl(calc(var(--wmp-hue) + 5.562deg) calc(45.91% * var(--wmp-sat)) calc(31.18% + var(--wmp-lift)));
+}
+
+/* Ambience. The canvas is upscaled from a few hundred pixels across and must *not* be
+   `pixelated` — the smooth stretch is part of the softness. Transparent where the trail
+   has decayed, so `.wmp-vis`'s gradient above is what the corners fade into. */
+.wmp-ambience {
+  position: absolute;
+  inset: 0;
+}
+.wmp-ambience-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The preset name, as the real player's info bar showed it. */
+.wmp-vis-name {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  color: hsl(calc(var(--wmp-hue) + -5.407deg) calc(72.97% * var(--wmp-sat)) calc(78.24% + var(--wmp-lift)));
+  font: var(--xp-fs) var(--xp-font);
+  text-shadow: 0 1px 2px #000;
+  opacity: 0.75;
+  pointer-events: none;
 }
 
 /* Bars: 32 columns rising from the floor. `--peak` per bar comes from the
@@ -105,7 +156,7 @@
   height: var(--peak, 50%);
   min-width: 2px;
   border-radius: 1px 1px 0 0;
-  background: linear-gradient(180deg, #7ee0ff 0%, #2f8fe0 45%, #1b4fa8 100%);
+  background: linear-gradient(180deg, hsl(calc(var(--wmp-hue) + -23.58deg) calc(100% * var(--wmp-sat)) calc(74.71% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + -10.54deg) calc(74.06% * var(--wmp-sat)) calc(53.14% + var(--wmp-lift))) 45%, hsl(calc(var(--wmp-hue) + -0.1277deg) calc(72.31% * var(--wmp-sat)) calc(38.24% + var(--wmp-lift))) 100%);
   transform: scaleY(0.18);
   transform-origin: bottom;
   animation-name: wmp-bounce;
@@ -141,12 +192,12 @@
   animation-play-state: running;
 }
 .wmp-wave--back {
-  fill: #1c4f9c;
+  fill: hsl(calc(var(--wmp-hue) + -1.906deg) calc(69.57% * var(--wmp-sat)) calc(36.08% + var(--wmp-lift)));
   opacity: 0.75;
   animation-duration: 5.2s;
 }
 .wmp-wave--front {
-  fill: #3f9de0;
+  fill: hsl(calc(var(--wmp-hue) + -13.03deg) calc(72.2% * var(--wmp-sat)) calc(56.27% + var(--wmp-lift)));
   opacity: 0.85;
 }
 @keyframes wmp-drift {
@@ -174,21 +225,21 @@
   height: 92px;
   border-radius: 50%;
   background:
-    radial-gradient(circle, #0b1330 0 14px, transparent 14px),
+    radial-gradient(circle, hsl(calc(var(--wmp-hue) + 9.027deg) calc(62.71% * var(--wmp-sat)) calc(11.57% + var(--wmp-lift))) 0 14px, transparent 14px),
     conic-gradient(
       from 0deg,
-      #2b4f8f,
-      #4d7fd0,
-      #2b4f8f,
-      #4d7fd0,
-      #2b4f8f,
-      #4d7fd0,
-      #2b4f8f
+      hsl(calc(var(--wmp-hue) + 0.4deg) calc(53.76% * var(--wmp-sat)) calc(36.47% + var(--wmp-lift))),
+      hsl(calc(var(--wmp-hue) + -0.9008deg) calc(58.22% * var(--wmp-sat)) calc(55.88% + var(--wmp-lift))),
+      hsl(calc(var(--wmp-hue) + 0.4deg) calc(53.76% * var(--wmp-sat)) calc(36.47% + var(--wmp-lift))),
+      hsl(calc(var(--wmp-hue) + -0.9008deg) calc(58.22% * var(--wmp-sat)) calc(55.88% + var(--wmp-lift))),
+      hsl(calc(var(--wmp-hue) + 0.4deg) calc(53.76% * var(--wmp-sat)) calc(36.47% + var(--wmp-lift))),
+      hsl(calc(var(--wmp-hue) + -0.9008deg) calc(58.22% * var(--wmp-sat)) calc(55.88% + var(--wmp-lift))),
+      hsl(calc(var(--wmp-hue) + 0.4deg) calc(53.76% * var(--wmp-sat)) calc(36.47% + var(--wmp-lift)))
     );
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 .wmp-art-caption {
-  color: #8fa8d8;
+  color: hsl(calc(var(--wmp-hue) + 1.452deg) calc(48.34% * var(--wmp-sat)) calc(70.39% + var(--wmp-lift)));
 }
 
 /* ---- Playlist ---- */
@@ -198,21 +249,21 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: #0d1734;
-  border: 1px solid #2b3f74;
+  background: hsl(calc(var(--wmp-hue) + 6.615deg) calc(60% * var(--wmp-sat)) calc(12.75% + var(--wmp-lift)));
+  border: 1px solid hsl(calc(var(--wmp-hue) + 5.562deg) calc(45.91% * var(--wmp-sat)) calc(31.18% + var(--wmp-lift)));
 }
 .wmp-playlist-head {
   display: flex;
   justify-content: space-between;
   flex: 0 0 auto;
   padding: 3px 6px;
-  background: linear-gradient(180deg, #2f5596 0%, #1d3868 100%);
-  border-bottom: 1px solid #0a1330;
+  background: linear-gradient(180deg, hsl(calc(var(--wmp-hue) + -0.1359deg) calc(52.28% * var(--wmp-sat)) calc(38.63% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + 0.4deg) calc(56.39% * var(--wmp-sat)) calc(26.08% + var(--wmp-lift))) 100%);
+  border-bottom: 1px solid hsl(calc(var(--wmp-hue) + 7.789deg) calc(65.52% * var(--wmp-sat)) calc(11.37% + var(--wmp-lift)));
   font-weight: bold;
 }
 .wmp-playlist-head > span {
   font-weight: normal;
-  color: #a8c0e8;
+  color: hsl(calc(var(--wmp-hue) + -0.5deg) calc(58.18% * var(--wmp-sat)) calc(78.43% + var(--wmp-lift)));
 }
 .wmp-playlist-body {
   flex: 1 1 auto;
@@ -230,20 +281,20 @@
   text-align: left;
   border: 0;
   background: none;
-  color: #cfe0f8;
+  color: hsl(calc(var(--wmp-hue) + -2.878deg) calc(74.55% * var(--wmp-sat)) calc(89.22% + var(--wmp-lift)));
   font: var(--xp-fs) var(--xp-font);
 }
 .wmp-track:hover {
   background: rgba(255, 255, 255, 0.08);
 }
 .wmp-track[data-selected='true'] {
-  background: #2f5596;
+  background: hsl(calc(var(--wmp-hue) + -0.1359deg) calc(52.28% * var(--wmp-sat)) calc(38.63% + var(--wmp-lift)));
   color: #fff;
 }
 /* The track actually loaded is called out even when the selection has moved on. */
 .wmp-track[data-playing='true'] .wmp-track-title {
   font-weight: bold;
-  color: #8ef0a8;
+  color: var(--wmp-readout);
 }
 .wmp-track-title {
   overflow: hidden;
@@ -252,7 +303,7 @@
 }
 .wmp-track-time {
   flex: 0 0 auto;
-  color: #9db6e0;
+  color: hsl(calc(var(--wmp-hue) + -0.3881deg) calc(51.94% * var(--wmp-sat)) calc(74.71% + var(--wmp-lift)));
 }
 
 /* ---- Media library ---- */
@@ -262,8 +313,8 @@
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  background: #0d1734;
-  border: 1px solid #2b3f74;
+  background: hsl(calc(var(--wmp-hue) + 6.615deg) calc(60% * var(--wmp-sat)) calc(12.75% + var(--wmp-lift)));
+  border: 1px solid hsl(calc(var(--wmp-hue) + 5.562deg) calc(45.91% * var(--wmp-sat)) calc(31.18% + var(--wmp-lift)));
 }
 .wmp-table {
   width: 100%;
@@ -274,8 +325,8 @@
   position: sticky;
   top: 0;
   padding: 3px 7px;
-  background: linear-gradient(180deg, #2f5596 0%, #1d3868 100%);
-  border-right: 1px solid #0a1330;
+  background: linear-gradient(180deg, hsl(calc(var(--wmp-hue) + -0.1359deg) calc(52.28% * var(--wmp-sat)) calc(38.63% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + 0.4deg) calc(56.39% * var(--wmp-sat)) calc(26.08% + var(--wmp-lift))) 100%);
+  border-right: 1px solid hsl(calc(var(--wmp-hue) + 7.789deg) calc(65.52% * var(--wmp-sat)) calc(11.37% + var(--wmp-lift)));
   text-align: left;
   font-weight: bold;
   white-space: nowrap;
@@ -287,7 +338,7 @@
   text-overflow: ellipsis;
 }
 .wmp-table tbody tr[data-selected='true'] {
-  background: #2f5596;
+  background: hsl(calc(var(--wmp-hue) + -0.1359deg) calc(52.28% * var(--wmp-sat)) calc(38.63% + var(--wmp-lift)));
   color: #fff;
 }
 .wmp-cell-right {
@@ -303,13 +354,13 @@
   justify-content: center;
   gap: 8px;
   padding: 24px 32px;
-  background: #0d1734;
-  border: 1px solid #2b3f74;
+  background: hsl(calc(var(--wmp-hue) + 6.615deg) calc(60% * var(--wmp-sat)) calc(12.75% + var(--wmp-lift)));
+  border: 1px solid hsl(calc(var(--wmp-hue) + 5.562deg) calc(45.91% * var(--wmp-sat)) calc(31.18% + var(--wmp-lift)));
 }
 .wmp-unavailable p {
   margin: 0;
   max-width: 44ch;
-  color: #a8c0e8;
+  color: hsl(calc(var(--wmp-hue) + -0.5deg) calc(58.18% * var(--wmp-sat)) calc(78.43% + var(--wmp-lift)));
   line-height: 1.5;
 }
 .wmp-unavailable-head {
@@ -323,8 +374,8 @@
 .wmp-transport {
   flex: 0 0 auto;
   padding: 4px 8px 6px;
-  background: linear-gradient(180deg, #1c3363 0%, #0e1c3c 100%);
-  border-top: 1px solid #3d5d9e;
+  background: linear-gradient(180deg, hsl(calc(var(--wmp-hue) + 2.563deg) calc(55.91% * var(--wmp-sat)) calc(24.9% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + 3.739deg) calc(62.16% * var(--wmp-sat)) calc(14.51% + var(--wmp-lift))) 100%);
+  border-top: 1px solid hsl(calc(var(--wmp-hue) + 2.206deg) calc(44.29% * var(--wmp-sat)) calc(42.94% + var(--wmp-lift)));
 }
 
 .wmp-seekrow {
@@ -334,7 +385,7 @@
 }
 .wmp-time {
   flex: 0 0 auto;
-  color: #a8c0e8;
+  color: hsl(calc(var(--wmp-hue) + -0.5deg) calc(58.18% * var(--wmp-sat)) calc(78.43% + var(--wmp-lift)));
   font-variant-numeric: tabular-nums;
 }
 
@@ -357,7 +408,7 @@
 .wmp-volume::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: #071023;
+  background: hsl(calc(var(--wmp-hue) + 2.714deg) calc(66.67% * var(--wmp-sat)) calc(8.235% + var(--wmp-lift)));
   box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 .wmp-seek::-webkit-slider-thumb,
@@ -367,14 +418,14 @@
   height: 11px;
   margin-top: -3.5px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #eaf4ff 0%, #7fb2ea 55%, #2a5aa8 100%);
+  background: radial-gradient(circle at 35% 30%, hsl(calc(var(--wmp-hue) + -6.571deg) calc(100% * var(--wmp-sat)) calc(95.88% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + -6.598deg) calc(71.81% * var(--wmp-sat)) calc(70.78% + var(--wmp-lift))) 55%, hsl(calc(var(--wmp-hue) + -0.8571deg) calc(60% * var(--wmp-sat)) calc(41.18% + var(--wmp-lift))) 100%);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 .wmp-seek::-moz-range-track,
 .wmp-volume::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: #071023;
+  background: hsl(calc(var(--wmp-hue) + 2.714deg) calc(66.67% * var(--wmp-sat)) calc(8.235% + var(--wmp-lift)));
 }
 .wmp-seek::-moz-range-thumb,
 .wmp-volume::-moz-range-thumb {
@@ -382,7 +433,7 @@
   height: 11px;
   border: 0;
   border-radius: 50%;
-  background: #7fb2ea;
+  background: hsl(calc(var(--wmp-hue) + -6.598deg) calc(71.81% * var(--wmp-sat)) calc(70.78% + var(--wmp-lift)));
 }
 
 .wmp-buttons {
@@ -403,8 +454,8 @@
   padding: 0;
   cursor: default;
   border-radius: 50%;
-  border: 1px solid #5f8fd8;
-  background: radial-gradient(circle at 38% 26%, #79b6ef 0%, #2f6bc0 52%, #143a7e 100%);
+  border: 1px solid hsl(calc(var(--wmp-hue) + -1.802deg) calc(60.8% * var(--wmp-sat)) calc(60.98% + var(--wmp-lift)));
+  background: radial-gradient(circle at 38% 26%, hsl(calc(var(--wmp-hue) + -9.017deg) calc(78.67% * var(--wmp-sat)) calc(70.59% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + -2.828deg) calc(60.67% * var(--wmp-sat)) calc(46.86% + var(--wmp-lift))) 52%, hsl(calc(var(--wmp-hue) + 0.4906deg) calc(72.6% * var(--wmp-sat)) calc(28.63% + var(--wmp-lift))) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 .wmp-play {
@@ -439,15 +490,15 @@
 .wmp-toggle {
   padding: 2px 8px;
   cursor: default;
-  border: 1px solid #3d5d9e;
+  border: 1px solid hsl(calc(var(--wmp-hue) + 2.206deg) calc(44.29% * var(--wmp-sat)) calc(42.94% + var(--wmp-lift)));
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.06);
-  color: #b8cdf0;
+  color: hsl(calc(var(--wmp-hue) + -0.5deg) calc(65.12% * var(--wmp-sat)) calc(83.14% + var(--wmp-lift)));
   font: var(--xp-fs) var(--xp-font);
 }
 .wmp-toggle[data-on='true'] {
-  background: linear-gradient(180deg, #4d86dc 0%, #2a5aa8 100%);
-  border-color: #7fb2ea;
+  background: linear-gradient(180deg, hsl(calc(var(--wmp-hue) + -1.916deg) calc(67.14% * var(--wmp-sat)) calc(58.24% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + -0.8571deg) calc(60% * var(--wmp-sat)) calc(41.18% + var(--wmp-lift))) 100%);
+  border-color: hsl(calc(var(--wmp-hue) + -6.598deg) calc(71.81% * var(--wmp-sat)) calc(70.78% + var(--wmp-lift)));
   color: #fff;
 }
 
@@ -459,9 +510,9 @@
   gap: 10px;
   flex: 0 0 auto;
   padding: 2px 8px;
-  background: #081128;
-  border-top: 1px solid #2b3f74;
-  color: #8fa8d8;
+  background: hsl(calc(var(--wmp-hue) + 5.125deg) calc(66.67% * var(--wmp-sat)) calc(9.412% + var(--wmp-lift)));
+  border-top: 1px solid hsl(calc(var(--wmp-hue) + 5.562deg) calc(45.91% * var(--wmp-sat)) calc(31.18% + var(--wmp-lift)));
+  color: hsl(calc(var(--wmp-hue) + 1.452deg) calc(48.34% * var(--wmp-sat)) calc(70.39% + var(--wmp-lift)));
 }
 .wmp-status > span:nth-child(1) {
   flex: 0 0 60px;
@@ -477,4 +528,358 @@
 .wmp-about {
   max-width: 320px;
   line-height: 1.5;
+}
+
+/* ---- Radio Tuner ---- */
+
+/* The Now Playing column. The info sits *over* the visualization rather than above it,
+   so the station art and title take no height from it — the visualization gets the whole
+   pane whether or not a station is on. */
+.wmp-np-main {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* The overlay below is `z-index: 1`, and a `position: relative` parent with
+     `z-index: auto` makes no stacking context — so without this the overlay would join
+     the nearest ancestor that does and paint over the playlist beside it. The trap is
+     written up in CLAUDE.md. */
+  isolation: isolate;
+}
+
+.wmp-np-info {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px 16px;
+  color: hsl(calc(var(--wmp-hue) + -0.8571deg) calc(100% * var(--wmp-sat)) calc(95.88% + var(--wmp-lift)));
+  /* Readable over a bright Ambience without hiding it: the scrim fades out entirely a
+     little below the text. */
+  background: linear-gradient(180deg, rgba(3, 8, 22, 0.82) 0%, rgba(3, 8, 22, 0) 100%);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* The station logo, served by SomaFM at 120px and shown at 44. */
+.wmp-np-logo {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(190, 214, 250, 0.45);
+  border-radius: 2px;
+  object-fit: cover;
+  background: hsl(calc(var(--wmp-hue) + 4.439deg) calc(67.21% * var(--wmp-sat)) calc(11.96% + var(--wmp-lift)));
+}
+
+.wmp-np-lines {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.wmp-np-artist,
+.wmp-np-title,
+.wmp-np-station {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+.wmp-np-artist {
+  font-size: 11px;
+  opacity: 0.85;
+}
+.wmp-np-title {
+  font-size: 15px;
+}
+.wmp-np-station {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+/* Album Art, when there is real art to show. */
+.wmp-art-image {
+  width: 128px;
+  height: 128px;
+  max-width: 60%;
+  max-height: 60%;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+.wmp-radio {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 7px 8px 6px;
+  color: hsl(calc(var(--wmp-hue) + -3.161deg) calc(79.49% * var(--wmp-sat)) calc(92.35% + var(--wmp-lift)));
+}
+.wmp-radio-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.wmp-radio-title {
+  font-size: 14px;
+}
+.wmp-radio-genre {
+  margin-left: auto;
+  height: 19px;
+  max-width: 172px;
+  border: 1px solid hsl(calc(var(--wmp-hue) + 5.562deg) calc(45.91% * var(--wmp-sat)) calc(31.18% + var(--wmp-lift)));
+  background: hsl(calc(var(--wmp-hue) + 2.976deg) calc(65.08% * var(--wmp-sat)) calc(12.35% + var(--wmp-lift)));
+  color: hsl(calc(var(--wmp-hue) + -3.161deg) calc(79.49% * var(--wmp-sat)) calc(92.35% + var(--wmp-lift)));
+  font: var(--xp-fs) var(--xp-font);
+}
+.wmp-radio-note {
+  margin: 0;
+  opacity: 0.75;
+}
+
+.wmp-radio-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid hsl(calc(var(--wmp-hue) + 5.562deg) calc(45.91% * var(--wmp-sat)) calc(31.18% + var(--wmp-lift)));
+  background: linear-gradient(180deg, hsl(calc(var(--wmp-hue) + 4.439deg) calc(67.21% * var(--wmp-sat)) calc(11.96% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + 4.581deg) calc(68.89% * var(--wmp-sat)) calc(8.824% + var(--wmp-lift))) 100%);
+}
+
+/* One station per row: button, name, description, genres, listeners, link. The
+   description takes the slack because it is the only part that can be any length. */
+.wmp-radio-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 6px;
+  border-bottom: 1px solid hsl(calc(var(--wmp-hue) + 6.444deg) calc(57.45% * var(--wmp-sat)) calc(18.43% + var(--wmp-lift)));
+}
+.wmp-radio-row:hover {
+  background: hsl(calc(var(--wmp-hue) + 5.448deg) calc(61.7% * var(--wmp-sat)) calc(18.43% + var(--wmp-lift)));
+}
+.wmp-radio-row[data-tuned='true'] {
+  background: hsl(calc(var(--wmp-hue) + 2deg) calc(63.27% * var(--wmp-sat)) calc(28.82% + var(--wmp-lift)));
+}
+
+.wmp-radio-tune {
+  flex: 0 0 54px;
+  padding: 1px 0 2px;
+  cursor: pointer;
+  border: 1px solid hsl(calc(var(--wmp-hue) + 1.429deg) calc(45.45% * var(--wmp-sat)) calc(45.29% + var(--wmp-lift)));
+  border-radius: 3px;
+  background: linear-gradient(180deg, hsl(calc(var(--wmp-hue) + -0.5deg) calc(53.54% * var(--wmp-sat)) calc(50.2% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + 0.4906deg) calc(60.92% * var(--wmp-sat)) calc(34.12% + var(--wmp-lift))) 100%);
+  color: #fff;
+  font: var(--xp-fs) var(--xp-font);
+}
+.wmp-radio-tune:hover {
+  background: linear-gradient(180deg, hsl(calc(var(--wmp-hue) + -0.7737deg) calc(63.72% * var(--wmp-sat)) calc(57.84% + var(--wmp-lift))) 0%, hsl(calc(var(--wmp-hue) + -0.2414deg) calc(57.43% * var(--wmp-sat)) calc(39.61% + var(--wmp-lift))) 100%);
+}
+.wmp-radio-row[data-tuned='true'] .wmp-radio-tune {
+  border-color: hsl(calc(var(--wmp-hue) + -15.97deg) calc(100% * var(--wmp-sat)) calc(74.9% + var(--wmp-lift)));
+}
+
+.wmp-radio-name {
+  flex: 0 0 132px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wmp-radio-desc {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.72;
+}
+.wmp-radio-genres {
+  flex: 0 0 auto;
+  max-width: 116px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.6;
+}
+.wmp-radio-listeners {
+  flex: 0 0 82px;
+  text-align: right;
+  opacity: 0.6;
+}
+.wmp-radio-link,
+.wmp-status-link {
+  flex: 0 0 auto;
+  color: hsl(calc(var(--wmp-hue) + -6.393deg) calc(100% * var(--wmp-sat)) calc(78.04% + var(--wmp-lift)));
+}
+.wmp-radio-link:hover,
+.wmp-status-link:hover {
+  color: hsl(calc(var(--wmp-hue) + -4.25deg) calc(100% * var(--wmp-sat)) calc(90.59% + var(--wmp-lift)));
+}
+
+/* The credit. Quiet, but never hidden — see the note in somafm.ts. */
+.wmp-radio-credit {
+  flex: 0 0 auto;
+  margin: 0;
+  opacity: 0.72;
+}
+.wmp-radio-credit a {
+  color: hsl(calc(var(--wmp-hue) + -6.393deg) calc(100% * var(--wmp-sat)) calc(78.04% + var(--wmp-lift)));
+}
+
+/* Each skin is a rotation of the one palette, so nothing here needs to know which colour
+   went where. Corona is the default block above and has no overrides of its own. */
+[data-wmp-skin='roundlet'] {
+  --wmp-hue: 212deg;
+  /* Not quite zero: a trace of blue keeps it reading as brushed metal rather than as a
+     black-and-white photograph of itself. */
+  --wmp-sat: 0.14;
+  --wmp-lift: 7%;
+  --wmp-radius: 9px;
+}
+[data-wmp-skin='pyrite'] {
+  --wmp-hue: 38deg;
+  --wmp-sat: 0.82;
+  --wmp-lift: 1%;
+  --wmp-readout: #ffe9a8;
+  --wmp-radius: 3px;
+}
+[data-wmp-skin='headspace'] {
+  --wmp-hue: 278deg;
+  --wmp-sat: 0.72;
+  --wmp-lift: -3%;
+  --wmp-readout: #d7b0ff;
+  --wmp-radius: 6px;
+}
+[data-wmp-skin='quickplay'] {
+  --wmp-hue: 152deg;
+  --wmp-sat: 0.5;
+  --wmp-lift: -5%;
+  --wmp-readout: #a8ffcf;
+  --wmp-radius: 0px;
+}
+
+/* Where the rounding lands. Only the big panels: rounding every control turns a media
+   player into a bubble, which none of the real skins did. */
+.wmp-vis,
+.wmp-playlist,
+.wmp-library,
+.wmp-radio-list {
+  border-radius: var(--wmp-radius);
+}
+
+/* ---- Skin Chooser ---- */
+
+.wmp-skins {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+}
+.wmp-skin-list {
+  flex: 0 0 168px;
+  overflow: auto;
+  border: 1px solid hsl(var(--wmp-hue) calc(45% * var(--wmp-sat)) calc(31% + var(--wmp-lift)));
+  background: hsl(var(--wmp-hue) calc(70% * var(--wmp-sat)) calc(9% + var(--wmp-lift)));
+  border-radius: var(--wmp-radius);
+}
+.wmp-skin-row {
+  display: block;
+  width: 100%;
+  padding: 3px 8px;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: var(--xp-fs) var(--xp-font);
+  text-align: left;
+}
+.wmp-skin-row:hover {
+  background: hsl(var(--wmp-hue) calc(60% * var(--wmp-sat)) calc(19% + var(--wmp-lift)));
+}
+.wmp-skin-row[aria-selected='true'] {
+  background: hsl(var(--wmp-hue) calc(63% * var(--wmp-sat)) calc(29% + var(--wmp-lift)));
+}
+.wmp-skin-current {
+  opacity: 0.6;
+}
+
+.wmp-skin-detail {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wmp-skin-blurb {
+  margin: 0;
+  opacity: 0.85;
+}
+.wmp-skin-apply {
+  align-self: flex-start;
+}
+
+/* The preview: a miniature of the player, carrying its own `data-wmp-skin` so it is
+   painted by the same variables the real thing is. It cannot show you a skin the player
+   would not produce, which is the same argument the screen saver preview makes. */
+.wmp-skin-preview {
+  flex: 0 0 auto;
+  width: 232px;
+  padding: 6px;
+  border: 1px solid hsl(var(--wmp-hue) calc(45% * var(--wmp-sat)) calc(31% + var(--wmp-lift)));
+  border-radius: var(--wmp-radius);
+  background: linear-gradient(
+    180deg,
+    hsl(var(--wmp-hue) calc(57% * var(--wmp-sat)) calc(31% + var(--wmp-lift))) 0%,
+    hsl(var(--wmp-hue) calc(55% * var(--wmp-sat)) calc(20% + var(--wmp-lift))) 100%
+  );
+}
+.wmp-skin-screen {
+  height: 76px;
+  border-radius: var(--wmp-radius);
+  background: hsl(var(--wmp-hue) calc(70% * var(--wmp-sat)) calc(9% + var(--wmp-lift)));
+  box-shadow: inset 0 0 0 1px hsl(var(--wmp-hue) calc(45% * var(--wmp-sat)) calc(31% + var(--wmp-lift)));
+}
+.wmp-skin-readout {
+  padding: 2px 0 4px;
+  color: var(--wmp-readout);
+  font: 9px var(--xp-font);
+}
+.wmp-skin-strip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.wmp-skin-play {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 34% 28%,
+    hsl(var(--wmp-hue) calc(80% * var(--wmp-sat)) calc(78% + var(--wmp-lift))) 0%,
+    hsl(var(--wmp-hue) calc(60% * var(--wmp-sat)) calc(45% + var(--wmp-lift))) 60%,
+    hsl(var(--wmp-hue) calc(60% * var(--wmp-sat)) calc(26% + var(--wmp-lift))) 100%
+  );
+}
+.wmp-skin-bar {
+  flex: 1 1 auto;
+  height: 4px;
+  border-radius: 2px;
+  background: hsl(var(--wmp-hue) calc(50% * var(--wmp-sat)) calc(22% + var(--wmp-lift)));
+}
+.wmp-skin-bar > i {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: 2px;
+  background: hsl(var(--wmp-hue) calc(70% * var(--wmp-sat)) calc(62% + var(--wmp-lift)));
 }

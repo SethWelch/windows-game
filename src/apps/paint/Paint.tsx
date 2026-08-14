@@ -3,6 +3,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 import { Dialog } from '@/components/ui/Dialog.tsx'
 import { FileDialog } from '@/components/ui/FileDialog.tsx'
 import { MenuBar } from '@/components/ui/MenuBar.tsx'
+import { display } from '@/os/display.ts'
 import { DOCS_ID, fs, getChildren, getNode } from '@/os/fs.ts'
 import type { AppProps } from '@/os/types.ts'
 import { useIsFocused } from '@/os/useWM.ts'
@@ -307,6 +308,21 @@ export function Paint({ windowId, args }: AppProps) {
       else saveTo(folderId, fileName)
     },
     saveAs: () => setFileDialog('save'),
+    /**
+     * Saves to My Documents and points the desktop at that file, so the picture on the
+     * wall is the same node the filesystem holds — edit it again and the desktop
+     * follows, delete it and the desktop falls back to the background colour.
+     *
+     * Tiled, because that is what the menu item says. Position is a dropdown in
+     * Display Properties for anyone who wants it centred or stretched.
+     */
+    setAsBackground: () => {
+      const s = surface()
+      if (!s) return
+      const name = fileName === UNTITLED ? 'Background.png' : fileName
+      const nodeId = fs.saveAs(DOCS_ID, name, s.canvas.toDataURL('image/png'))
+      display.set({ wallpaper: { kind: 'file', nodeId }, position: 'tile' })
+    },
     exit: () => wm.close(windowId),
     undo,
     flipRotate: () => setDialog('flip'),

@@ -14,6 +14,8 @@ import {
   fs,
   getChildren,
   getNode,
+  sizeOf,
+  typeLabel,
   useFsVersion,
 } from '@/os/fs.ts'
 import type { FsNode } from '@/os/fs.ts'
@@ -38,12 +40,6 @@ function originOf(node: FsNode): string {
   return names.length ? `C:\\${names.join('\\')}` : 'C:\\'
 }
 
-const TYPES: Record<FsNode['kind'], string> = {
-  folder: 'File Folder',
-  file: 'Text Document',
-  shortcut: 'Shortcut',
-}
-
 const stamp = (at?: number) =>
   at
     ? new Date(at).toLocaleString([], {
@@ -55,8 +51,9 @@ const stamp = (at?: number) =>
       })
     : ''
 
-const sizeOf = (node: FsNode) =>
-  node.kind === 'folder' ? '' : `${Math.ceil((node.content?.length ?? 0) / 1024) || 1} KB`
+/** The bin shows sizes in whole kilobytes, and nothing at all for a folder. */
+const sizeLabel = (node: FsNode) =>
+  node.kind === 'folder' ? '' : `${Math.ceil(sizeOf(node) / 1024) || 1} KB`
 
 /**
  * One row of the bin, whichever store it came out of.
@@ -95,8 +92,8 @@ export function RecycleBin({ windowId }: AppProps) {
         name: node.name,
         origin: originOf(node),
         at: node.restore?.at,
-        type: TYPES[node.kind],
-        size: sizeOf(node),
+        type: typeLabel(node),
+        size: sizeLabel(node),
       }),
     ),
     ...discarded.map(

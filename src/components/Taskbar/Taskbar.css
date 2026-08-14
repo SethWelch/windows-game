@@ -6,20 +6,9 @@
   align-items: stretch;
   user-select: none;
   z-index: 10;
-  background: linear-gradient(
-    180deg,
-    #1f2f86 0%,
-    #3168d0 3%,
-    #4a90e8 6%,
-    #2f6fd8 10%,
-    #2361d4 12%,
-    #2361d4 88%,
-    #1f56c0 94%,
-    #1a49ad 97%,
-    #123f9e 100%
-  );
+  background: var(--taskbar-bg);
   box-shadow:
-    inset 0 1px 0 #5a9bf0,
+    inset 0 1px 0 var(--taskbar-rim),
     inset 0 2px 0 rgba(255, 255, 255, 0.12);
 }
 
@@ -53,21 +42,7 @@
       rgba(0, 0, 0, 0.26) 100%
     ),
     /* the gloss: light rim, a bright band through the upper-middle, dark base */
-      linear-gradient(
-        180deg,
-        #8ec765 0%,
-        #63ad3c 4%,
-        #4ea128 11%,
-        #499d21 20%,
-        #57ac2c 31%,
-        #6dbe3b 42%,
-        #63b634 50%,
-        #4ba024 60%,
-        #3d8d19 72%,
-        #2f7a13 84%,
-        #22630e 94%,
-        #1a5108 100%
-      );
+      var(--start-bg);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.42),
     inset 0 -1px 0 rgba(0, 0, 0, 0.4),
@@ -168,17 +143,10 @@
   gap: 7px;
   height: 100%;
   padding: 0 9px 0 11px;
-  background: linear-gradient(
-    180deg,
-    #1290e8 0%,
-    #12a4f0 6%,
-    #0e83dc 40%,
-    #1290e8 90%,
-    #1aa0f2 100%
-  );
+  background: var(--tray-bg);
   box-shadow:
-    inset 1px 0 0 #0c5cae,
-    inset 2px 0 0 #3fb0f5;
+    inset 1px 0 0 var(--tray-edge),
+    inset 2px 0 0 var(--tray-rim);
   color: #fff;
   font: var(--xp-fs) var(--xp-font);
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);

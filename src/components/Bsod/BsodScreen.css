@@ -1,0 +1,46 @@
+/* The stop screen. Text mode: one font, one colour, no chrome. */
+
+.bsod {
+  width: 100%;
+  height: 100%;
+  /* XP's bugcheck blue. Configurable in boot.ini and almost nobody configured it. */
+  background: #0000aa;
+  color: #fff;
+  /* There is no shell to point at, so no pointer. */
+  cursor: none;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+/* Text mode was 80 columns and the text simply started near the top-left of them —
+   not centred in the block, not centred on the page. */
+.bsod-page {
+  width: 80ch;
+  max-width: 100%;
+  padding: 6% 2ch 0;
+  font: 15px/1.34 var(--xp-mono);
+  overflow: hidden;
+}
+
+.bsod-line {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* An empty paragraph collapses, and the vertical rhythm of these screens was the
+   only formatting they had. */
+.bsod-blank {
+  margin: 0;
+  height: 1.34em;
+}
+
+/* The one line that isn't a reproduction, so it gets to blink for attention. */
+.bsod-hint {
+  animation: bsod-blink 1.1s steps(1) infinite;
+}
+@keyframes bsod-blink {
+  50% {
+    opacity: 0.25;
+  }
+}

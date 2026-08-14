@@ -1,12 +1,18 @@
-export type Visualization = 'bars' | 'waves' | 'art'
+import { AmbienceCanvas } from './AmbienceCanvas.tsx'
+
+export type Visualization = 'ambience' | 'bars' | 'waves' | 'art'
 
 /**
  * The visualizations — the single most recognisable thing about this window.
  *
- * All of it animates in CSS rather than from a JS loop. There is no audio to
- * analyse, so nothing has to be computed per frame, and the bars can bounce at
+ * Bars, Waves and Album Art animate in CSS rather than from a JS loop. There is no
+ * audio to analyse, so nothing has to be computed per frame, and the bars can bounce at
  * sixty frames a second without the player re-rendering once. `data-playing` on the
  * wrapper is what starts and stops them.
+ *
+ * Ambience is the exception, and the reason is a real one rather than convenience: its
+ * smoke is built out of the previous frame, and CSS cannot read what it drew. That one
+ * gets a canvas, and rotates through three presets on its own — see ambience.ts.
  */
 
 const BAR_COUNT = 32
@@ -33,14 +39,29 @@ export function Visualizer({
 }: {
   kind: Visualization
   playing: boolean
-  /** Named by the Album Art view, which has no artwork to show. */
-  track: { title: string; album: string } | null
+  /** Named by the Album Art view. `art` is set only by the radio, which has real art. */
+  track: { title: string; album: string; art?: string } | null
 }) {
+  if (kind === 'ambience') {
+    return (
+      <div className="wmp-vis" data-playing={playing}>
+        {/* Names its own preset, because the rotation is its to know about. */}
+        <AmbienceCanvas playing={playing} />
+      </div>
+    )
+  }
+
   if (kind === 'art') {
     return (
       <div className="wmp-vis wmp-vis--art">
         <div className="wmp-art">
-          <span className="wmp-art-disc" />
+          {/* The drawn disc was a stand-in for artwork that did not exist. A station has
+              actual art, so when there is a real image it wins. */}
+          {track?.art ? (
+            <img className="wmp-art-image" src={track.art} alt={track.album} />
+          ) : (
+            <span className="wmp-art-disc" />
+          )}
           <span className="wmp-art-caption">
             {track ? track.album : 'No album art'}
           </span>

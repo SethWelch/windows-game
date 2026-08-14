@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { Taskbar } from '@/components/Taskbar/Taskbar.tsx'
+import { BuddyLayer } from '@/components/Buddy/BuddyLayer.tsx'
+import { ScreensaverLayer } from '@/components/Screensaver/ScreensaverLayer.tsx'
 import { PopupLayer } from '@/components/Popups/PopupLayer.tsx'
 import { WindowLayer } from '@/components/Window/WindowLayer.tsx'
 import { ContextMenu } from '@/components/ui/ContextMenu.tsx'
@@ -9,7 +11,15 @@ import {
   folderContextMenu,
   itemContextMenu,
 } from '@/components/ui/shellMenus.ts'
-import { DESKTOP_ID, fs, getChildren, getNode, useFsVersion } from '@/os/fs.ts'
+import {
+  DESKTOP_ID,
+  fs,
+  getChildren,
+  getNode,
+  sizeOf,
+  typeLabel,
+  useFsVersion,
+} from '@/os/fs.ts'
 import type { FsNode, ShortcutTarget } from '@/os/fs.ts'
 import {
   CELL_H,
@@ -17,17 +27,73 @@ import {
   cellToPx,
   desktop,
   layout,
+  useDesktopOptions,
   snapToCell,
   usePositions,
 } from '@/os/desktop.ts'
 import { clearDropHover, dropTargetAt, performDrop, trackDropHover } from '@/os/dnd.ts'
 import { clipboard, openNode, useClipboard } from '@/os/shell.ts'
 import { wm } from '@/os/windowStore.ts'
+import { TurnOffDialog } from '@/components/Shutdown/TurnOffDialog.tsx'
+import { useShutdownPrompt } from '@/os/shutdown.ts'
+import { screensaver } from '@/os/screensaver.ts'
+import { buddy, useCarriedIcons } from '@/os/buddy.ts'
+import { useDisplay } from '@/os/display.ts'
+import { wallpaperLook } from '@/os/wallpaper.ts'
 import { DesktopIcon } from './DesktopIcon.tsx'
 import './Desktop.css'
 
 /** Movement below this is a click, not a drag. */
 const DRAG_SLOP = 4
+
+type ArrangeKey = 'name' | 'size' | 'type' | 'modified'
+
+/**
+ * How the type groups are ordered: system folders first, then real folders, then links,
+ * then documents. Ranked deliberately rather than sorted by the label's spelling —
+ * alphabetically "Shortcut" precedes "System Folder", which buries My Computer below a
+ * pile of links and is not how the shell ever grouped them.
+ */
+const TYPE_RANK = (node: FsNode) =>
+  node.system ? 0 : node.kind === 'folder' ? 1 : node.kind === 'shortcut' ? 2 : 3
+
+/**
+ * The four keys XP offered, each with the comparator behind it.
+ *
+ * `localeCompare` rather than `<`, so `Netscape` and `notepad` sort together instead of
+ * every capital letter coming first. Ties fall back to the name, which keeps every sort
+ * stable and repeatable — arranging twice by Type must not shuffle the icons about.
+ */
+const ARRANGERS: {
+  id: ArrangeKey
+  label: string
+  compare: (a: FsNode, b: FsNode) => number
+}[] = [
+  {
+    id: 'name',
+    label: '&Name',
+    compare: (a, b) => a.name.localeCompare(b.name),
+  },
+  {
+    id: 'size',
+    label: 'Si&ze',
+    compare: (a, b) => sizeOf(b) - sizeOf(a) || a.name.localeCompare(b.name),
+  },
+  {
+    id: 'type',
+    label: '&Type',
+    compare: (a, b) =>
+      TYPE_RANK(a) - TYPE_RANK(b) ||
+      typeLabel(a).localeCompare(typeLabel(b)) ||
+      a.name.localeCompare(b.name),
+  },
+  {
+    id: 'modified',
+    label: 'Modifie&d',
+    // Oldest first, the way clicking the column in Explorer sorted it.
+    compare: (a, b) => a.modified - b.modified || a.name.localeCompare(b.name),
+  },
+]
 
 interface Band {
   x: number
@@ -67,6 +133,35 @@ export function Desktop() {
   useFsVersion()
   usePositions()
   const clip = useClipboard()
+  const turningOff = useShutdownPrompt()
+  // Icons Bongo is carrying, drawn at his hand instead of in their cell. A selector
+  // rather than the whole buddy list, so his moods and chatter don't re-render this.
+  const carriedIcons = useCarriedIcons()
+  const options = useDesktopOptions()
+
+  // Watching for idleness belongs to the desktop's lifetime: armed when the shell comes
+  // up, disarmed when it goes away, so nothing polls at a machine that is switched off.
+  useEffect(() => {
+    screensaver.arm()
+    return () => screensaver.disarm()
+  }, [])
+
+  /** Sort the desktop by one of the four keys, then let the store place them. */
+  const arrangeBy = (key: ArrangeKey) => {
+    const nodes = getChildren(DESKTOP_ID)
+    const compare = ARRANGERS.find((a) => a.id === key)?.compare
+    if (!compare) return
+    desktop.arrange([...nodes].sort(compare).map((n) => n.id))
+  }
+  const displaySettings = useDisplay()
+  // A picture out of the filesystem is held by node id, so it has to be looked up
+  // every render — deleting the file falls the desktop back to the colour.
+  const wallpaper = wallpaperLook(
+    displaySettings,
+    displaySettings.wallpaper.kind === 'file'
+      ? getNode(displaySettings.wallpaper.nodeId)
+      : undefined,
+  )
 
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [editing, setEditing] = useState<string | null>(null)
@@ -313,6 +408,13 @@ export function Desktop() {
         const at = cellToPx(cell.col, cell.row)
         m.el.style.transform = `translate(${at.x}px, ${at.y}px)`
       }
+
+      // Auto Arrange: the icon lands where you dropped it and then everything closes up
+      // behind it. The transforms above are written first on purpose — compacting
+      // re-renders every icon from its new cell, which overwrites them.
+      if (desktop.options().autoArrange) {
+        desktop.compact(getChildren(DESKTOP_ID).map((n) => n.id))
+      }
     }
 
     function cleanup() {
@@ -368,14 +470,47 @@ export function Desktop() {
     onPaste: paste,
     canPaste: !!clip,
     onRefresh: () => bump((t) => t + 1),
+    // The way almost everybody actually opened Display Properties.
+    onProperties: () => wm.openApp('displayProperties'),
     extras: [
       {
         id: 'arrange',
         label: 'Arra&nge Icons By',
         submenu: [
-          { id: 'arr-name', label: '&Name' },
-          { id: 'arr-size', label: 'Si&ze' },
-          { id: 'arr-type', label: '&Type' },
+          ...ARRANGERS.map((a) => ({
+            id: `arr-${a.id}`,
+            label: a.label,
+            onSelect: () => arrangeBy(a.id),
+          })),
+          { kind: 'separator' as const },
+          {
+            id: 'arr-auto',
+            label: 'Auto Arra&nge',
+            checked: options.autoArrange,
+            onSelect: () => {
+              const next = !options.autoArrange
+              desktop.setOption('autoArrange', next)
+              // Turning it on closes the gaps immediately, rather than waiting for the
+              // next drop to reveal that it did anything.
+              if (next) desktop.compact(getChildren(DESKTOP_ID).map((n) => n.id))
+            },
+          },
+          {
+            // Always on here: there is no free positioning to align *from*. Every icon
+            // lives in a cell, so this is the state XP left it in, greyed because
+            // turning it off isn't something this desktop can do.
+            id: 'arr-align',
+            label: 'Align to &Grid',
+            checked: true,
+            disabled: true,
+          },
+          { kind: 'separator' as const },
+          {
+            id: 'arr-show',
+            label: '&Show Desktop Icons',
+            checked: options.showIcons,
+            onSelect: () => desktop.setOption('showIcons', !options.showIcons),
+          },
         ],
       },
     ],
@@ -415,16 +550,23 @@ export function Desktop() {
         setMenu({ x: e.clientX, y: e.clientY, items: desktopMenu })
       }}
     >
-      <div className="xp-wallpaper" />
+      <div
+        className={`xp-wallpaper ${wallpaper.className}`.trim()}
+        style={wallpaper.style}
+      />
 
+      {/* The layer stays mounted with Show Desktop Icons off — the rubber band and the
+          right-click that turns them back on both live on it, and the icons themselves
+          are simply not rendered. */}
       <div className="xp-icon-layer" ref={layerRef}>
-        {items.map((node) => {
+        {(options.showIcons ? items : []).map((node) => {
           const cell = cells.get(node.id) ?? { col: 0, row: 0 }
           return (
             <DesktopIcon
               key={node.id}
               node={node}
               cell={cell}
+              carriedTo={carriedIcons.get(node.id) ?? null}
               selected={selected.has(node.id)}
               cut={clip?.mode === 'cut' && clip.nodeId === node.id}
               editing={editing === node.id}
@@ -432,7 +574,12 @@ export function Desktop() {
                 if (el) iconEls.current.set(node.id, el)
                 else iconEls.current.delete(node.id)
               }}
-              onPointerDown={(e) => onIconPointerDown(e, node)}
+              onPointerDown={(e) => {
+                // Taking it off him: otherwise his carry and this drag would both be
+                // writing the same element's transform.
+                buddy.release(node.id)
+                onIconPointerDown(e, node)
+              }}
               onOpen={() => openNode(node)}
               onContextMenu={(e) => {
                 e.preventDefault()
@@ -462,6 +609,8 @@ export function Desktop() {
       <WindowLayer />
       {/* Above the windows, below the taskbar — see PopupLayer.css. */}
       <PopupLayer />
+      {/* Above both, still below the taskbar — see Buddy.css. */}
+      <BuddyLayer />
       <Taskbar />
 
       {menu && (
@@ -472,6 +621,12 @@ export function Desktop() {
           onDismiss={() => setMenu(null)}
         />
       )}
+
+      {/* Last, and over everything: while this is up nothing behind it is reachable. */}
+      {turningOff && <TurnOffDialog />}
+
+      {/* Over even that — walking away mid-question should still blank the screen. */}
+      <ScreensaverLayer />
     </div>
   )
 }

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { Icon } from '@/icons/Icon.tsx'
 import { PaneChevron } from '@/icons/ToolbarIcons.tsx'
 import type { IconId } from '@/icons/registry.ts'
-import { DOCS_ID, ROOT_ID, getNode } from '@/os/fs.ts'
+import { CONTROL_PANEL_ID, DOCS_ID, ROOT_ID, getNode, typeLabel } from '@/os/fs.ts'
 import type { FsNode } from '@/os/fs.ts'
 
 function Pane({ title, children }: { title: string; children: ReactNode }) {
@@ -49,12 +49,6 @@ function Link({
   )
 }
 
-const KIND_LABEL: Record<FsNode['kind'], string> = {
-  folder: 'File Folder',
-  file: 'Text Document',
-  shortcut: 'Shortcut',
-}
-
 export function TaskPane({
   folder,
   selected,
@@ -75,6 +69,23 @@ export function TaskPane({
   const atRoot = folder.id === ROOT_ID
   const parent = folder.parentId ? getNode(folder.parentId) : undefined
   const detail = selected ?? folder
+
+  // The Control Panel gets its own two panes and none of the file ones — there are no
+  // files in it to rename, copy or publish to the web.
+  if (folder.id === CONTROL_PANEL_ID || folder.parentId === CONTROL_PANEL_ID) {
+    return (
+      <div className="xp-explorer-tasks">
+        <Pane title="Control Panel">
+          {/* Classic View is the other half of this folder, and it doesn't exist yet. */}
+          <Link label="Switch to Classic View" iconId="controlPanel" />
+        </Pane>
+        <Pane title="See Also">
+          <Link label="Windows Update" iconId="windowsxp" />
+          <Link label="Help and Support" iconId="help" />
+        </Pane>
+      </div>
+    )
+  }
 
   return (
     <div className="xp-explorer-tasks">
@@ -128,7 +139,7 @@ export function TaskPane({
       <Pane title="Details">
         <div className="xp-pane-details">
           <strong>{detail.name}</strong>
-          <span>{detail.system ? 'System Folder' : KIND_LABEL[detail.kind]}</span>
+          <span>{typeLabel(detail)}</span>
         </div>
       </Pane>
     </div>

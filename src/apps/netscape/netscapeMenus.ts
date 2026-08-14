@@ -9,6 +9,7 @@ export interface NetscapeActions {
   stop: () => void
   go: (url: string) => void
   viewSource: () => void
+  composer: () => void
   about: () => void
   close: () => void
   toggleBar: (bar: 'navigation' | 'location' | 'personal') => void
@@ -133,7 +134,7 @@ export const buildNetscapeMenus = (
       items: [
         { id: 'nav', label: '&Navigator', checked: true },
         { id: 'messenger', label: '&Messenger Mailbox', disabled: true },
-        { id: 'composer', label: 'Page &Composer', disabled: true },
+        { id: 'composer', label: 'Page &Composer', onSelect: a.composer },
         { kind: 'separator' },
         {
           id: 'bookmarks',

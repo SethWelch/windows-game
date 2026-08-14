@@ -1,9 +1,13 @@
 import { aimApp, aimImApp } from '@/apps/aim/index.ts'
+import { buddyApp } from '@/apps/buddy/index.ts'
 import { calculatorApp } from '@/apps/calculator/index.ts'
 import { commandPromptApp } from '@/apps/cmd/index.ts'
+import { composerApp, composerPreviewApp } from '@/apps/composer/index.ts'
+import { displayPropertiesApp } from '@/apps/displayProperties/index.ts'
 import { explorerApp } from '@/apps/explorer/index.ts'
 import { netscapeApp } from '@/apps/netscape/index.ts'
 import { mediaPlayerApp } from '@/apps/mediaPlayer/index.ts'
+import { mazeApp } from '@/apps/maze/index.ts'
 import { minesweeperApp } from '@/apps/minesweeper/index.ts'
 import { notepadApp } from '@/apps/notepad/index.ts'
 import { paintApp } from '@/apps/paint/index.ts'
@@ -25,6 +29,7 @@ export const APP_LIST: AppDefinition[] = [
   explorerApp,
   minesweeperApp,
   solitaireApp,
+  mazeApp,
   calculatorApp,
   commandPromptApp,
   soundRecorderApp,
@@ -32,9 +37,14 @@ export const APP_LIST: AppDefinition[] = [
   wordPadApp,
   mediaPlayerApp,
   netscapeApp,
+  composerApp,
+  displayPropertiesApp,
   aimApp,
   // Opened only by a buddy, never from the shell — see apps/aim/index.ts.
   aimImApp,
-  // Not in any menu — its desktop shortcut is the only way in.
+  // Opened only by Composer's Pop Out button — see apps/composer/index.ts.
+  composerPreviewApp,
+  // Not in any menu — their desktop shortcuts are the only way in.
   spamApp,
+  buddyApp,
 ]

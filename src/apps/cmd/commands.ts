@@ -1,6 +1,8 @@
 import { ROOT_ID, fs, getChildren, getNode } from '@/os/fs.ts'
 import type { FsNode } from '@/os/fs.ts'
 import { DRIVE, commas, displayPath, dosStamp, resolve, resolveTarget, sizeOf } from './paths.ts'
+import { boot, stopFatal } from '@/os/boot.ts'
+import { popups } from '@/os/popups.ts'
 
 /**
  * The command table. Each command returns the lines it printed — no direct access
@@ -240,6 +242,8 @@ const HELP = [
   'PING           Sends ICMP echo requests to a host.',
   'RD             Removes a directory.',
   'REN            Renames a file or files.',
+  'TASKKILL       Ends one or more tasks or processes.',
+  'TASKLIST       Displays all currently running processes.',
   'TIME           Displays or sets the system time.',
   'TITLE          Sets the window title for a CMD.EXE session.',
   'TREE           Graphically displays the directory structure.',
@@ -248,7 +252,101 @@ const HELP = [
   'VOL            Displays a disk volume label and serial number.',
 ]
 
+/**
+ * The process list. Invented, but the memory figures are in the right order of
+ * magnitude for a machine of this vintage, and the first three are the ones the
+ * kernel cannot continue without — see `taskkill`.
+ */
+const PROCESSES: { image: string; pid: number; mem: number; critical?: string }[] = [
+  { image: 'System Idle Process', pid: 0, mem: 28 },
+  { image: 'System', pid: 4, mem: 236 },
+  { image: 'smss.exe', pid: 456, mem: 388, critical: 'Session Manager' },
+  { image: 'csrss.exe', pid: 504, mem: 3_912, critical: 'Windows SubSystem' },
+  { image: 'winlogon.exe', pid: 528, mem: 5_104, critical: 'Windows Logon Process' },
+  { image: 'services.exe', pid: 572, mem: 3_356 },
+  { image: 'lsass.exe', pid: 584, mem: 1_240 },
+  { image: 'svchost.exe', pid: 748, mem: 4_628 },
+  { image: 'spoolsv.exe', pid: 1_216, mem: 4_284 },
+  { image: 'explorer.exe', pid: 1_492, mem: 14_360 },
+  { image: 'sfindsvc.exe', pid: 1_884, mem: 41_208 },
+  { image: 'cmd.exe', pid: 2_040, mem: 2_468 },
+]
+
+function tasklist(): string[] {
+  return [
+    '',
+    'Image Name                     PID Session Name     Session#    Mem Usage',
+    '========================= ====== ================ ======== ============',
+    ...PROCESSES.map(
+      (p) =>
+        `${p.image.padEnd(25)} ${String(p.pid).padStart(6)} Console                 0 ` +
+        `${`${commas(p.mem)} K`.padStart(12)}`,
+    ),
+    '',
+  ]
+}
+
+/**
+ * Ends a process. Refuses without `/f`, as the real one does for anything stubborn.
+ *
+ * Killing one of the three critical entries stops the machine on a bugcheck, which is
+ * exactly what it did — this is the documented way to blue-screen XP on purpose, and
+ * it is the reason `taskkill` is here at all.
+ */
+function taskkill(_ctx: CommandContext, args: string[]): string[] {
+  const flags = args.filter((a) => a.startsWith('/')).map((a) => a.toLowerCase())
+  const forced = flags.includes('/f')
+  const imageAt = args.findIndex((a) => a.toLowerCase() === '/im')
+  const pidAt = args.findIndex((a) => a.toLowerCase() === '/pid')
+
+  const image = imageAt >= 0 ? args[imageAt + 1] : undefined
+  const pid = pidAt >= 0 ? Number(args[pidAt + 1]) : undefined
+  if (!image && !Number.isFinite(pid)) {
+    return [
+      'ERROR: Invalid syntax. Value expected for \'/im\'.',
+      'Type "TASKKILL /?" for usage.',
+    ]
+  }
+
+  const target = PROCESSES.find((p) =>
+    image ? p.image.toLowerCase() === image.toLowerCase() : p.pid === pid,
+  )
+  if (!target) {
+    return [
+      `ERROR: The process "${image ?? pid}" not found.`,
+    ]
+  }
+  if (!forced) {
+    return [
+      `ERROR: The process "${target.image}" with PID ${target.pid} could not be`,
+      'terminated.',
+      'Reason: This process can only be terminated forcefully (with /F option).',
+    ]
+  }
+
+  if (target.critical) {
+    // The line would print, and then there is nothing left to print it on.
+    boot.bluescreen(stopFatal(target.critical))
+    return []
+  }
+
+  const killed = [
+    `SUCCESS: The process "${target.image}" with PID ${target.pid} has been terminated.`,
+  ]
+
+  // The adware service owns the advertisements, so ending it clears them — the one
+  // thing in this whole program that removes them without closing them one at a time.
+  if (target.image === 'sfindsvc.exe' && popups.count()) {
+    const gone = popups.count()
+    popups.closeAll()
+    return [...killed, `${gone} advertisement(s) closed.`]
+  }
+  return killed
+}
+
 export const COMMANDS: Record<string, Command> = {
+  tasklist,
+  taskkill,
   dir,
   cd,
   chdir: cd,

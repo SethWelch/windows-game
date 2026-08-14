@@ -19,6 +19,8 @@ import {
   ViewsIcon,
 } from '@/icons/ToolbarIcons.tsx'
 import {
+  CONTROL_PANEL_ID,
+  CP_APPEARANCE_ID,
   DESKTOP_ID,
   ROOT_ID,
   fs,
@@ -43,6 +45,8 @@ import {
 } from '@/os/dnd.ts'
 import type { AppProps } from '@/os/types.ts'
 import { wm } from '@/os/windowStore.ts'
+import { AppearanceThemesView } from '@/apps/controlPanel/AppearanceThemesView.tsx'
+import { ControlPanelView } from '@/apps/controlPanel/ControlPanelView.tsx'
 import { TaskPane } from './TaskPane.tsx'
 import './Explorer.css'
 
@@ -481,6 +485,14 @@ export function Explorer({ windowId, args }: AppProps) {
             />
           )}
 
+          {/* The Control Panel is a folder that isn't a folder: XP's shell gave it its
+              own body inside an ordinary Explorer window, which is why it gets the menu
+              bar, toolbar, address bar and task pane for nothing. */}
+          {folder.id === CONTROL_PANEL_ID ? (
+            <ControlPanelView onNavigate={goTo} />
+          ) : folder.id === CP_APPEARANCE_ID ? (
+            <AppearanceThemesView />
+          ) : (
           <div
             className="xp-explorer-view"
             onPointerDown={(e) => {
@@ -572,6 +584,7 @@ export function Explorer({ windowId, args }: AppProps) {
               </div>
             ))}
           </div>
+          )}
         </div>
       </div>
 

@@ -10,6 +10,6 @@ export const paintApp: AppDefinition = {
   defaultSize: { width: 620, height: 486 },
   // Below this the tool box and the colour box stop fitting side by side.
   minSize: { width: 460, height: 320 },
-  startMenuSection: 'programs',
+  startMenuSection: 'pinned',
   startMenuFolder: ['Accessories'],
 }

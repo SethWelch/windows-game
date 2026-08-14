@@ -1,0 +1,121 @@
+/* The Turn Off Computer panel. Not a window: no titlebar, no resize, no taskbar
+   button, and nothing behind it is reachable while it is up. */
+
+.xp-turnoff {
+  position: fixed;
+  inset: 0;
+  /* Over everything, menus included — see the ladder in the other stylesheets:
+     windows 1, ads 5, buddy 7, taskbar 10, Start menu 20, tray 30, menus 900, and the
+     screen saver above this at 1100. */
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+
+  /* Reaches backwards out of an element that contains nothing but itself, so the
+     desktop keeps its own stacking and positioning. A filter on an ancestor would
+     make it the containing block for every fixed descendant under it. */
+  backdrop-filter: grayscale(1) brightness(0.52);
+  -webkit-backdrop-filter: grayscale(1) brightness(0.52);
+}
+/* Where that isn't supported, dim without desaturating rather than not at all. */
+@supports not ((backdrop-filter: grayscale(1)) or (-webkit-backdrop-filter: grayscale(1))) {
+  .xp-turnoff {
+    background: rgba(24, 26, 24, 0.56);
+  }
+}
+
+.xp-turnoff-panel {
+  width: 412px;
+  max-width: calc(100% - 32px);
+  border: 1px solid #0a2c6e;
+  border-radius: 5px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  font: var(--xp-fs) var(--xp-font);
+  color: #fff;
+}
+
+.xp-turnoff-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px 10px;
+  background: linear-gradient(180deg, #2f6fd0 0%, #17439c 52%, #0f316f 100%);
+}
+.xp-turnoff-title {
+  flex: 1 1 auto;
+  font: 17px var(--xp-title-font);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.55);
+}
+.xp-turnoff-logo {
+  flex: 0 0 auto;
+  opacity: 0.95;
+}
+
+/* The lighter middle band the three choices sit on. */
+.xp-turnoff-body {
+  display: flex;
+  justify-content: center;
+  gap: 34px;
+  padding: 22px 18px 24px;
+  background: linear-gradient(180deg, #4b8ade 0%, #3a76c8 46%, #2f68b8 100%);
+}
+
+.xp-turnoff-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 82px;
+  padding: 4px 0;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  color: #fff;
+  font: bold var(--xp-fs) var(--xp-font);
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+}
+.xp-turnoff-choice:hover,
+.xp-turnoff-choice:focus-visible {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.14);
+  outline: 0;
+}
+
+/* The three buttons: a rounded square with a glassy top half. */
+.xp-turnoff-orb {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -8px 12px rgba(0, 0, 0, 0.22),
+    0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.xp-turnoff-orb svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+}
+.xp-turnoff-orb--standby {
+  background: linear-gradient(180deg, #ffd05a 0%, #f0a81c 52%, #c47c00 100%);
+}
+.xp-turnoff-orb--off {
+  background: linear-gradient(180deg, #f07a5a 0%, #d8301c 52%, #9c1408 100%);
+}
+.xp-turnoff-orb--restart {
+  background: linear-gradient(180deg, #7ada6a 0%, #2fa03f 52%, #14701f 100%);
+}
+.xp-turnoff-choice:hover .xp-turnoff-orb {
+  filter: brightness(1.12);
+}
+
+.xp-turnoff-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 9px 12px 11px;
+  background: linear-gradient(180deg, #17439c 0%, #0f316f 100%);
+}

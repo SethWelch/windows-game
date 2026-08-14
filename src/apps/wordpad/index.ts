@@ -10,6 +10,6 @@ export const wordPadApp: AppDefinition = {
   defaultSize: { width: 700, height: 520 },
   // Below this the format bar's selects and buttons stop fitting on one line.
   minSize: { width: 480, height: 300 },
-  startMenuSection: 'programs',
+  startMenuSection: 'pinned',
   startMenuFolder: ['Accessories'],
 }

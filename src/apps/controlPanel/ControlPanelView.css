@@ -1,0 +1,167 @@
+/* The Control Panel's category view. Its own blue field rather than Explorer's white
+   list, which is the first thing that told you this folder was not a folder. */
+
+.cp {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px 22px 24px;
+  background:
+    /* The watermark XP tucked into the bottom right: a tick on a page, at the very
+       edge of visible. Drawn in gradients rather than shipped as a bitmap. */
+    radial-gradient(circle at 88% 82%, rgba(255, 255, 255, 0.09) 0 16%, transparent 16%),
+    linear-gradient(180deg, #6b7fd7 0%, #5f74d0 42%, #7c8ede 100%);
+  color: #fff;
+}
+
+.cp-heading {
+  margin: 0 0 18px;
+  font: normal 26px var(--xp-title-font);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* Two columns, as the real one had — and one column when the window is too narrow for
+   two, rather than clipping the labels. */
+.cp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 6px 20px;
+  max-width: 660px;
+}
+
+.cp-category {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  cursor: default;
+  text-align: left;
+  font: var(--xp-fs) var(--xp-font);
+  color: #fff;
+}
+.cp-category:hover,
+.cp-category:focus-visible {
+  outline: 0;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+/* The label underlines on hover, because these were links. */
+.cp-category:hover .cp-category-label {
+  text-decoration: underline;
+}
+
+.cp-category-art {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+.cp-category-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: bold;
+  line-height: 1.3;
+}
+
+/* ---- A category page ----
+   Same field as the category list, but laid out as prose: a heading, then task sentences,
+   then the applets they map onto. */
+
+.cp--page {
+  position: relative;
+}
+
+.cp-section {
+  max-width: 560px;
+  margin-bottom: 22px;
+}
+.cp-section-heading {
+  margin: 0 0 8px;
+  font: bold 12px var(--xp-font);
+  color: #fff;
+}
+
+.cp-tasks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cp-tasks li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 3px 0;
+}
+/* The bullet XP used on these lists: a small chevron rather than a disc. */
+.cp-tasks li::before {
+  content: '›';
+  flex: 0 0 auto;
+  font-size: 14px;
+  line-height: 1;
+  color: #d8e0ff;
+}
+.cp-task {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: default;
+  font: var(--xp-fs) var(--xp-font);
+  color: #fff;
+  text-align: left;
+}
+.cp-task:hover,
+.cp-task:focus-visible {
+  outline: 0;
+  text-decoration: underline;
+}
+
+.cp-applets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.cp-applet {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  cursor: default;
+  font: bold var(--xp-fs) var(--xp-font);
+  color: #fff;
+}
+.cp-applet:hover,
+.cp-applet:focus-visible {
+  outline: 0;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.34);
+  text-decoration: underline;
+}
+.cp-applet-art {
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+/* Faint, large, and out of the way in the corner. */
+.cp-watermark {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  width: 132px;
+  height: 132px;
+  opacity: 0.16;
+  pointer-events: none;
+}
+.cp-watermark svg {
+  width: 100%;
+  height: 100%;
+}

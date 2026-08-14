@@ -1,0 +1,63 @@
+/* Bongo's panel. The layout's one job beyond looking right is that the buttons stay
+   inside the window: everything above them is `flex: 0 0 auto` and would happily push
+   them out of the bottom, so the hint absorbs the slack and the panel scrolls rather
+   than overflowing if the content ever outgrows the frame. */
+
+.bp {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 10px 11px 11px;
+  background: var(--face);
+  font: var(--xp-fs) var(--xp-font);
+  overflow: hidden;
+}
+
+.bp-head {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+/* Keeps the artwork's 120x110 aspect, so he isn't squashed in the panel. */
+.bp-portrait {
+  flex: 0 0 66px;
+  width: 66px;
+  height: 61px;
+}
+.bp-blurb {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.bp-blurb p {
+  margin: 0 0 4px;
+  line-height: 1.4;
+}
+.bp-blurb p:last-child {
+  margin-bottom: 0;
+}
+.bp-title {
+  font: bold 13px var(--xp-font);
+  color: #4a1f8c;
+}
+.bp-count {
+  font-weight: bold;
+}
+
+/* Takes up whatever room is left, and gives it back when there isn't any. */
+.bp-hint {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  margin: 0;
+  color: #303030;
+  font-style: italic;
+}
+
+.bp-buttons {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}

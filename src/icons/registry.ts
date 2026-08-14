@@ -1,6 +1,7 @@
 import { AimIcon } from './AimIcon.tsx'
 import { CalculatorIcon } from './CalculatorIcon.tsx'
 import { CommandPromptIcon } from './CommandPromptIcon.tsx'
+import { ComposerIcon } from './ComposerIcon.tsx'
 import { FolderIcon } from './FolderIcon.tsx'
 import { MediaPlayerIcon } from './MediaPlayerIcon.tsx'
 import { MinesweeperIcon } from './MinesweeperIcon.tsx'
@@ -14,6 +15,19 @@ import { SoundRecorderIcon } from './SoundRecorderIcon.tsx'
 import { SpamIcon } from './SpamIcon.tsx'
 import { SolitaireIcon } from './SolitaireIcon.tsx'
 import { WordPadIcon } from './WordPadIcon.tsx'
+import { BuddyIcon } from './BuddyIcon.tsx'
+import { DisplayIcon } from './DisplayIcon.tsx'
+import {
+  ControlPanelIcon,
+  HelpIcon,
+  MyMusicIcon,
+  MyPicturesIcon,
+  PrintersIcon,
+  RecentIcon,
+  RunIcon,
+  SearchPlaceIcon,
+} from './StartMenuIcons.tsx'
+import { MazeIcon } from './MazeIcon.tsx'
 import { StartFlag } from './StartFlag.tsx'
 import { GoIcon } from './ToolbarIcons.tsx'
 import { TextFileIcon } from './TextFileIcon.tsx'
@@ -30,6 +44,7 @@ export const ICONS = {
   calculator: CalculatorIcon,
   commandPrompt: CommandPromptIcon,
   netscape: NetscapeIcon,
+  composer: ComposerIcon,
   soundRecorder: SoundRecorderIcon,
   paint: PaintIcon,
   wordpad: WordPadIcon,
@@ -39,6 +54,17 @@ export const ICONS = {
   myComputer: MyComputerIcon,
   textFile: TextFileIcon,
   folder: FolderIcon,
+  buddy: BuddyIcon,
+  display: DisplayIcon,
+  maze: MazeIcon,
+  myPictures: MyPicturesIcon,
+  myMusic: MyMusicIcon,
+  recent: RecentIcon,
+  controlPanel: ControlPanelIcon,
+  printers: PrintersIcon,
+  searchPlace: SearchPlaceIcon,
+  help: HelpIcon,
+  run: RunIcon,
   windowsxp: StartFlag,
   /** Composited over another icon, not used on its own. */
   shortcut: ShortcutOverlay,

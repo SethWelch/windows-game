@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { audio } from './audio.ts'
+import { STOP_SPAM, boot } from './boot.ts'
 import { TASKBAR_H } from './constants.ts'
 import type { ArtName } from '@/components/Popups/adArt.tsx'
 
@@ -906,10 +907,42 @@ function make(template: AdTemplate): Ad {
 }
 
 export const popups = {
-  /** One more, if there's a template left that isn't already on screen. */
+  /**
+   * What the POST does. The ad layer is module state and the wave is a set of timers, so
+   * without this both walk straight through a reboot: a bugcheck from any other cause —
+   * `taskkill /f /im csrss.exe`, Stand By — left every ad sitting on the fresh desktop,
+   * and rebooting mid-wave let the queue keep firing into the new session. Either one
+   * puts you back at the cap, which bugchecks again, which is a loop.
+   *
+   * The spam overload calls `closeAll` itself before bugchecking, so that one path was
+   * always clean. This covers the rest of them.
+   */
+  onBoot() {
+    popups.closeAll()
+  },
+
+  /**
+   * One more, if there's a template left that isn't already on screen.
+   *
+   * When there isn't — every advertisement there is, all at once — the machine stops.
+   * You have to work at this: the first wave is thirty-six of the forty-nine, and the
+   * rest only arrive if you keep clicking. Reaching it is the joke paying off, not an
+   * accident, and `restart` from the stop screen is a real way back because the boot
+   * state isn't persisted.
+   */
   spawn() {
+    // Nothing arrives on a machine that isn't running Windows. A wave is a queue of
+    // timers, and a reboot has to end it rather than pause it — the same guard the
+    // window manager and the desktop assistant already apply to their own timers.
+    if (!boot.isRunning()) return
     const template = unused()
-    if (!template) return
+    if (!template) {
+      // Clear them first: the layer is module state and would survive the reboot,
+      // which would put you back on a full screen of ads on a fresh desktop.
+      popups.closeAll()
+      boot.bluescreen(STOP_SPAM)
+      return
+    }
     commit([...ads, make(template)])
   },
 
@@ -920,6 +953,7 @@ export const popups = {
    * rather than trickling in for six.
    */
   infect() {
+    if (!boot.isRunning()) return
     audio.play('exclamation')
     for (let i = 0; i < FIRST_WAVE; i++) {
       const timer = window.setTimeout(
