@@ -39,7 +39,19 @@ export function Window({ win }: { win: WindowInstance }) {
 
   const onPointerDownCapture = useCallback(() => wm.focus(win.id), [win.id])
 
-  if (win.status === 'minimized') return null
+  /*
+   * A minimized window is *hidden*, not unmounted — see `[data-status='minimized']` in
+   * Window.css. This used to `return null`, which threw the app component away and every
+   * piece of React state with it: minimizing Navigator lost your session history and put you
+   * back on the home page, minimizing Solitaire reshuffled the deal, minimizing Paint lost
+   * the drawing, and minimizing Media Player tore down the radio mid-song. Minimizing is
+   * supposed to get a window out of the way, not close it.
+   *
+   * The cost is that a hidden window still renders and its loops still run. That is cheap:
+   * `display: none` means no layout and no paint, and the canvases size themselves from
+   * their host element, which measures zero while hidden — so they collapse to a pixel and
+   * rebuild on the way back.
+   */
 
   const style: CSSProperties =
     win.status === 'maximized'

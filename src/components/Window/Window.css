@@ -43,6 +43,14 @@
   border-radius: 0;
 }
 
+/* Minimized: out of the way, still alive. Window.tsx explains why this is `display: none`
+   rather than the component being unmounted — the short version is that unmounting loses
+   everything the app was holding. `display: none` also takes it out of the tab order and
+   away from screen readers, which a window on the taskbar should be. */
+.xp-window[data-status='minimized'] {
+  display: none;
+}
+
 .xp-window-body {
   flex: 1 1 auto;
   display: flex;

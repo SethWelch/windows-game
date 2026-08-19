@@ -84,6 +84,34 @@ correctly-shaped content in the wrong place. Give the parent `isolation: isolate
   in that one graph. Schedule it against `ctx.currentTime` with a lookahead window; a
   `setInterval` that plays notes *when it fires* jitters audibly, one that only queues the
   next 350ms does not.
+- **`base: './'` in `vite.config.ts` is load-bearing for deployment.** Vite's default `/`
+  emits root-absolute asset URLs, which only work at the root of a domain — a GitHub Pages
+  project site lives at `/<repo>/`, so every asset 404s and you get a white screen. Relative
+  is better than hardcoding the repo name, which would then break `npm run preview` and the
+  root case. Nothing here reads the address bar, so there is no router to upset.
+  Related, and the thing that actually wasted the time: **Pages' "Deploy from a branch" mode
+  serves the repo as it stands**, and the repo's `index.html` is the *dev* one pointing at
+  `/src/main.tsx`. The symptom is a white page and a console complaining about a `text/html`
+  MIME type — that is Pages' 404 page being refused, not a build problem. `dist/` must be
+  what gets published; `.github/workflows/pages.yml` does it, and Settings → Pages → Source
+  has to be **GitHub Actions**.
+- **The bundled fonts are substitutes, and the stack order is the point.** Tahoma and
+  Trebuchet MS are Microsoft's and cannot be redistributed, so `src/fonts/` holds subsets of
+  DejaVu Sans Condensed and Fira Sans instead — chosen by measuring advance widths against
+  the originals, because the whole shell is laid out to Tahoma's metrics and a face 14% wider
+  bursts the menus. `tokens.css` lists installed faces before the bundled ones, so a Windows
+  visitor gets real Tahoma and downloads nothing. `screensavers/flat/marquee.ts` repeats the
+  caption stack as a canvas string, which a custom property cannot reach — change both.
+- **A fetched page must be based on where the response came from, not what you asked for.**
+  `theoldnet.com/get?url=...` 302s to `web.archive.org`, and archived pages are full of
+  document-relative links (`news.html`) and root-relative images. Basing the document on the
+  requested URL turned all of them into `theoldnet.com/...`, so every click left the archive
+  and Back appeared to jump back to theoldnet — the reported symptom was "Back is broken",
+  the cause was `<base>`. `fetch` gives you `res.url` after redirects; use it, and note that
+  the *same* value has to base the `<base>` tag, the Location bar and relative form actions.
+  Relatedly, a 5xx from the archive is common under load and is retried rather than treated
+  as a refusal, because the fallback path hands the page to a bare iframe whose navigation is
+  invisible — and that really does break Back.
 - **Third-party services** are reached by allowlist and credited in the UI, not silently:
   `LIVE_HOSTS` in `apps/netscape/sites.ts` for the web, `apps/mediaPlayer/somafm.ts` for
   radio. Both files record why that service and not another — HTTPS-only, CORS, no API

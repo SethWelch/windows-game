@@ -1,0 +1,66 @@
+# Builds the site and publishes it to GitHub Pages.
+#
+# This exists because Pages' other mode — "Deploy from a branch" — serves the repository as
+# it stands, and the repository's `index.html` is the *development* one: it points at
+# `/src/main.tsx`, which only a Vite dev server can serve. Pages hands back its 404 page
+# instead, the browser refuses it for having a `text/html` MIME type, and you get a white
+# screen with nothing obviously wrong in the HTML.
+#
+# So the built `dist/` has to be what gets published, and `dist` is gitignored — which is
+# correct, and is why this builds it here rather than committing it.
+#
+# In the repository: Settings -> Pages -> Build and deployment -> Source: **GitHub Actions**.
+# Leaving it on "Deploy from a branch" means this workflow runs, succeeds, and changes nothing.
+name: Deploy to Pages
+
+on:
+  push:
+    branches: [main]
+  # So a broken build can be re-run without an empty commit.
+  workflow_dispatch:
+
+# What `deploy-pages` needs. Without `id-token` the deploy step fails on a permissions error
+# that does not mention tokens.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it half-published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` rather than `install`: it honours the lockfile exactly, so the build here is
+      # the build you tested locally.
+      - run: npm ci
+
+      # `npm run build` is `tsc -b && vite build`, so a type error fails the deploy rather
+      # than shipping a broken bundle.
+      - run: npm run build
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

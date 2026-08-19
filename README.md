@@ -225,7 +225,10 @@ npm run dev
   `LIVE_HOSTS`, which Navigator really does go and fetch. `theoldnet.com` is
   bookmarked on the personal toolbar; its pages are fetched with `fetch()` and
   rendered as our own document, so the Location bar, Back and View Source keep
-  working out there.
+  working out there. `theoldnet.com/get` is a front end to the Wayback Machine and
+  answers with a redirect, so the document is based on where the response *came from*
+  rather than what was asked for — otherwise every relative link and image on an
+  archived page resolves against theoldnet and clicking one takes you off the archive.
 - **Netscape Composer** — Communicator's HTML editor, and the item in Navigator's
   **Communicator** menu that used to be greyed out. Source on one side, the rendered
   page on the other, over a divider you can drag; or **Pop Out Preview** and the page
@@ -309,6 +312,26 @@ npm run dev
   seven people who answer. Each conversation is its own window; buddies type at
   their own speed, go away, and one of them IMs you first. Away messages, the
   B/I/U colour bar, and emoticons that turn into faces.
+
+## Deploying
+
+`.github/workflows/pages.yml` builds on a push to `main` and publishes `dist/` to GitHub
+Pages. It needs **Settings → Pages → Source: GitHub Actions** — on "Deploy from a branch"
+Pages serves the repository as it stands, and the repository's `index.html` is the
+development one that points at `/src/main.tsx`. That gives a white screen and a console
+error about a disallowed `text/html` MIME type, which is Pages' own 404 page being refused
+rather than anything wrong with the build.
+
+Assets are built with `base: './'` so the same output works at a domain root, under
+`/<repo>/`, or opened straight off disk. Nothing here reads the address bar, so there is no
+history fallback to configure.
+
+The bundled faces are freely licensed and safe to publish: **DejaVu Sans Condensed** and
+**Fira Sans**, standing in for Tahoma and Trebuchet MS, picked by measuring width and
+x-height rather than by eye — see the note at the top of `src/styles/fonts.css`. The stacks
+in `tokens.css` list installed fonts *first*, so anyone on Windows or macOS still gets the
+real thing and most visitors download no font at all. Both licences ship in
+`public/licenses/`, because both require it.
 
 ## Architecture
 

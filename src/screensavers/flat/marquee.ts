@@ -17,7 +17,10 @@ export const marquee: Saver = {
   name: 'Marquee',
   create(w, h) {
     const size = Math.round(h * SIZE)
-    const font = `bold ${size}px "XP Trebuchet", "Trebuchet MS", sans-serif`
+    // Mirrors --xp-title-font in styles/tokens.css, installed faces first. A canvas font
+    // string cannot read a custom property, so this is the one place the stack is repeated;
+    // if that token changes, change it here too.
+    const font = `bold ${size}px "Trebuchet MS", "Fira Sans", "XP Caption", Tahoma, sans-serif`
     let width = 0
     let x = w
     let y = h / 2

@@ -44,6 +44,12 @@ interface NetscapeArgs {
 const CONNECT_MS = 260
 const TRANSFER_MS = 320
 
+/** Attempts at a live page before giving up and letting the frame load it blind. */
+const FETCH_TRIES = 3
+
+/** Multiplied by the attempt number, so the second wait is longer than the first. */
+const RETRY_MS = 400
+
 type LoadPhase = 'connect' | 'transfer' | 'done'
 
 export function Netscape({ windowId, args }: AppProps) {
@@ -82,6 +88,17 @@ export function Netscape({ windowId, args }: AppProps) {
     key: string
     html: string | null
     title?: string
+    /**
+     * Where the response actually came from, after redirects.
+     *
+     * Not the same as what was asked for, and the difference was a real bug.
+     * `theoldnet.com/get?url=...` is a front end to the Wayback Machine: it answers with a
+     * 302 to `web.archive.org/web/<timestamp>/http://...`. Using the requested URL as the
+     * document's `<base>` made every root-relative link in an archived page — and the
+     * Wayback Machine rewrites them all to `/web/<timestamp>/...` — resolve against
+     * theoldnet instead, so clicking one went to a theoldnet URL that does not exist.
+     */
+    url?: string
   } | null>(null)
 
   const frameRef = useRef<HTMLIFrameElement>(null)
@@ -111,10 +128,18 @@ export function Netscape({ windowId, args }: AppProps) {
    * the chrome that needs to read the DOM: link interception, the hover status, our
    * own history, View Source.
    */
+  /**
+   * Where the page we are holding actually came from, which is what its relative links
+   * have to resolve against. Only different from `address` when the server redirected —
+   * see `fetched.url`. Also what the Location bar shows, because a browser that has
+   * followed a redirect shows you where you ended up, not where you asked to go.
+   */
+  const origin = liveReady && fetched.url ? fetched.url : address
+
   const ownDoc = page
     ? documentFor(page)
     : typeof liveHtml === 'string'
-      ? withBase(address, liveHtml)
+      ? withBase(origin, liveHtml)
       : null
   /** The fetch was refused, so hand the address to the frame and go blind. */
   const opaque = live && liveHtml === null
@@ -143,7 +168,11 @@ export function Netscape({ windowId, args }: AppProps) {
       ? `Connecting to ${host}...`
       : phase === 'transfer'
         ? `Transferring data from ${host}...`
-        : 'Document: Done')
+        : opaque
+          ? // Worth saying out loud: in this mode the frame owns its own history, so Back
+            // returns to the last page *we* loaded and skips anything followed inside it.
+            `Opened directly from ${host} — Back cannot follow links inside this page.`
+          : 'Document: Done')
 
   const title = page?.title ?? (liveReady ? fetched.title : undefined) ?? host
 
@@ -183,21 +212,44 @@ export function Netscape({ windowId, args }: AppProps) {
    *
    * Only works where the host allows it — no `Access-Control-Allow-Origin`, no
    * markup — so the refusal path falls back to letting the frame do it.
+   *
+   * A 5xx is retried rather than treated as a refusal, because falling back to the frame
+   * costs the thing this whole path exists for. The Wayback Machine, which is where
+   * theoldnet's links end up, answers 503 under load often enough that a single attempt
+   * dropped us into the blind path most of the time — and in the blind path Back walks our
+   * history while the *frame* has been quietly building its own, which is exactly how
+   * pressing Back ends up somewhere you never were.
    */
   useEffect(() => {
     if (!live || stopped) return
     const abort = new AbortController()
+    let cancelled = false
 
-    fetch(address, { signal: abort.signal, redirect: 'follow' })
-      .then((res) => (res.ok ? res.text() : Promise.reject(new Error(`${res.status}`))))
-      .then((html) => setFetched({ key: loadKey, html, title: titleIn(html) }))
+    const attempt = async () => {
+      for (let tries = 1; ; tries++) {
+        const res = await fetch(address, { signal: abort.signal, redirect: 'follow' })
+        // `res.url` is where we ended up, which is what the document has to be based on.
+        if (res.ok) return { html: await res.text(), url: res.url }
+        // A 4xx is an answer; a 5xx is usually the archive being busy.
+        if (res.status < 500 || tries >= FETCH_TRIES) throw new Error(String(res.status))
+        await new Promise((settle) => window.setTimeout(settle, RETRY_MS * tries))
+      }
+    }
+
+    attempt()
+      .then(({ html, url }) => {
+        if (!cancelled) setFetched({ key: loadKey, html, title: titleIn(html), url })
+      })
       .catch((err: Error) => {
         // Stop aborts the request; that isn't a failure to fall back from.
-        if (err.name === 'AbortError') return
+        if (cancelled || err.name === 'AbortError') return
         setFetched({ key: loadKey, html: null })
       })
 
-    return () => abort.abort()
+    return () => {
+      cancelled = true
+      abort.abort()
+    }
   }, [live, stopped, address, loadKey])
 
   const go = (target: string) => {
@@ -296,7 +348,9 @@ export function Netscape({ windowId, args }: AppProps) {
       for (const [name, value] of new FormData(form).entries()) {
         if (typeof value === 'string') params.append(name, value)
       }
-      const action = new URL(form.getAttribute('action') || '', address)
+      // Against `origin`, not the requested address — a relative action on a redirected
+      // page belongs to where the page came from. Same reason as the `<base>` above.
+      const action = new URL(form.getAttribute('action') || '', origin)
       action.search = params.toString()
       latest.current.go(action.href)
     }
@@ -326,7 +380,7 @@ export function Netscape({ windowId, args }: AppProps) {
     attach()
     frame.addEventListener('load', attach)
     return () => frame.removeEventListener('load', attach)
-  }, [loadKey, hasOwnDoc, address])
+  }, [loadKey, hasOwnDoc, origin])
 
   const menus = buildNetscapeMenus(actions, {
     canBack,
@@ -369,7 +423,7 @@ export function Netscape({ windowId, args }: AppProps) {
           <input
             id={`ns-loc-${windowId}`}
             className="ns-location"
-            value={typed ?? canonicalUrl(url)}
+            value={typed ?? origin}
             spellCheck={false}
             onChange={(e) => setTyped(e.target.value)}
             onFocus={(e) => e.currentTarget.select()}
@@ -457,7 +511,7 @@ export function Netscape({ windowId, args }: AppProps) {
       </div>
 
       {source && (
-        <Dialog title={`Source of: ${canonicalUrl(url)}`} onClose={() => setSource(null)}>
+        <Dialog title={`Source of: ${origin}`} onClose={() => setSource(null)}>
           <pre className="ns-source">{source}</pre>
           <div className="xp-dialog-buttons">
             <button

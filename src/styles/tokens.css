@@ -13,8 +13,12 @@
   /* Bundled first (see fonts.css) so the look never depends on what the viewer has
      installed. System copies sit behind them as fallbacks for glyphs the subset
      omits — Tahoma has no U+2713, for instance. */
-  --xp-font: 'XP Tahoma', Tahoma, Verdana, 'Segoe UI', sans-serif;
-  --xp-title-font: 'XP Trebuchet', 'Trebuchet MS', Tahoma, Verdana, sans-serif;
+  /* Installed fonts first, bundled ones last — see the note in fonts.css. Anyone on
+     Windows or macOS has the real Tahoma and Trebuchet MS and gets them; most Linux
+     installations have DejaVu; only a machine with none of them downloads anything. */
+  --xp-font: Tahoma, 'DejaVu Sans Condensed', 'XP Sans', Verdana, 'Segoe UI', sans-serif;
+  --xp-title-font:
+    'Trebuchet MS', 'Fira Sans', 'XP Caption', Tahoma, Verdana, sans-serif;
   --xp-mono: 'Lucida Console', 'DejaVu Sans Mono', 'Courier New', monospace;
   --xp-fs: 11px;
 
