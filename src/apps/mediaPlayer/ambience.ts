@@ -313,8 +313,13 @@ export function createAmbience(
     // Where the cycle is: which preset, which one it is handing over to, and how far
     // through the handover. `mix` is 0 for the whole hold, so most of the time the second
     // preset costs nothing.
-    const phase = elapsed % period
-    const index = Math.floor(elapsed / period) % PRESETS.length
+    // `elapsed` should never be negative — see the dt clamp in AmbienceCanvas.tsx — but
+    // the modulo is written to survive it anyway, because JavaScript's `%` keeps the sign
+    // of the dividend and `PRESETS[-1]` is a crash rather than a wrong colour. A
+    // visualization must not be able to take the window down.
+    const clock = Math.max(0, elapsed)
+    const phase = clock % period
+    const index = Math.floor(clock / period) % PRESETS.length
     const from = PRESETS[index]
     const to = PRESETS[(index + 1) % PRESETS.length]
     const mix = phase <= HOLD_MS ? 0 : (phase - HOLD_MS) / FADE_MS

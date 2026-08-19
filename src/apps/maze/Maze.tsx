@@ -81,7 +81,12 @@ export function Maze({ windowId }: AppProps) {
       if (stopped) return
       // Clamped: a window dragged behind another, or a backgrounded tab, hands back a
       // multi-second gap, and collision is a position test rather than a swept one.
-      const dt = Math.min(now - last, 50) / 1000
+      // Clamped at *both* ends. The upper bound is the backgrounded-tab gap; the lower
+      // bound is subtler and cost a real bug: `last` is set with `performance.now()` when
+      // the effect runs, but the first callback is handed the timestamp of the frame that
+      // was already in progress, which can be *earlier* than that. `now - last` is then
+      // negative, and anything integrating dt runs backwards on its first frame.
+      const dt = Math.max(0, Math.min(now - last, 50)) / 1000
       last = now
       fit()
       step(world, dt, held.current)

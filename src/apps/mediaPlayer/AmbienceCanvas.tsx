@@ -79,10 +79,18 @@ export function AmbienceCanvas({ playing }: { playing: boolean }) {
     const frame = (now: number) => {
       handle = 0
       if (stopped) return
-      // Clamped hard: a backgrounded tab hands back a multi-second gap on the first frame
-      // after it wakes, and since the decay is raised to the power of `dt` an unclamped
-      // one would blank the trail completely.
-      const dt = Math.min(now - last, 50)
+      // Clamped at *both* ends. The upper bound is the backgrounded-tab gap; the lower
+      // bound is subtler and cost a real bug: `last` is set with `performance.now()` when
+      // the effect runs, but the first callback is handed the timestamp of the frame that
+      // was already in progress, which can be *earlier* than that. `now - last` is then
+      // negative, and anything integrating dt runs backwards on its first frame.
+      //
+      // Here that made `elapsed` negative, `Math.floor(-0.0002)` is -1, and JavaScript's
+      // `%` keeps the sign — so `PRESETS[-1]` was undefined and the first frame threw,
+      // killing the loop before it drew anything. It only showed up when the canvas
+      // mounted with playback already running, which is exactly what tuning a station and
+      // then switching to Now Playing does.
+      const dt = Math.max(0, Math.min(now - last, 50))
       last = now
       const ctx = canvas.getContext('2d')
       if (ctx && paint) paint(ctx, dt)

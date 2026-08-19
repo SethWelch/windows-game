@@ -11,6 +11,7 @@ import { mazeApp } from '@/apps/maze/index.ts'
 import { minesweeperApp } from '@/apps/minesweeper/index.ts'
 import { notepadApp } from '@/apps/notepad/index.ts'
 import { paintApp } from '@/apps/paint/index.ts'
+import { pianoApp } from '@/apps/piano/index.ts'
 import { recycleBinApp } from '@/apps/recycleBin/index.ts'
 import { soundRecorderApp } from '@/apps/soundRecorder/index.ts'
 import { wordPadApp } from '@/apps/wordpad/index.ts'
@@ -36,6 +37,7 @@ export const APP_LIST: AppDefinition[] = [
   paintApp,
   wordPadApp,
   mediaPlayerApp,
+  pianoApp,
   netscapeApp,
   composerApp,
   displayPropertiesApp,

@@ -1,0 +1,130 @@
+/* A keyboard. The white keys are laid out on a grid of their own width and the black ones
+   straddle the joins between them — see LAYOUT in keys.ts for where the numbers come from. */
+
+.pn {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--face);
+  font: var(--xp-fs) var(--xp-font);
+  user-select: none;
+}
+
+/* ---- The strip above the keys ---- */
+
+.pn-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--shadow);
+}
+.pn-check,
+.pn-octave {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.pn-octave .xp-button {
+  min-width: 21px;
+  padding: 0 4px;
+}
+.pn-octave-value {
+  min-width: 20px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.pn-hint {
+  margin-left: auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--disabled-fg);
+}
+
+/* ---- The keyboard ---- */
+
+.pn-keys {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 74px;
+  margin: 9px 10px 12px;
+  /* The black keys are `z-index: 2`, and a `position: relative` box with `z-index: auto`
+     makes no stacking context — so without this they would join the nearest ancestor that
+     does and paint over the menu bar. The trap is written up in CLAUDE.md. */
+  isolation: isolate;
+  /* One white key's width. `--pn-whites` comes from the component, because CSS cannot count
+     how many white keys there are. */
+  --pn-key: calc(100% / var(--pn-whites));
+  /* The felt strip along the back of a real keyboard, which is also what hides the top
+     edge of the white keys' bevel. */
+  border-top: 3px solid #7a1f22;
+  background: #1b1b1f;
+}
+
+.pn-key {
+  position: absolute;
+  top: 0;
+  left: calc(var(--x) * var(--pn-key));
+  width: calc(var(--w) * var(--pn-key));
+  padding: 0;
+  cursor: pointer;
+  /* Every key is a button, so it needs the default button look taken off it. */
+  font: inherit;
+  /* Vertical, because the only thing on a key is its letter, at the bottom. */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* White keys: ivory with a rounded foot, and a seam down the left side. */
+.pn-key:not(.pn-key--black) {
+  height: 100%;
+  z-index: 1;
+  border: 1px solid #8c8c92;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(180deg, #f4f4ef 0%, #fbfbf7 62%, #e6e6de 100%);
+  color: #8a8a90;
+  box-shadow: inset -2px 0 2px -1px rgba(0, 0, 0, 0.16);
+}
+.pn-key:not(.pn-key--black)[data-down='true'] {
+  /* Pressed: darker, and shifted a pixel so it reads as going down rather than lighting up. */
+  background: linear-gradient(180deg, #d8dce4 0%, #e6eaf1 62%, #c6ccd6 100%);
+  box-shadow:
+    inset -2px 0 2px -1px rgba(0, 0, 0, 0.2),
+    inset 0 2px 3px rgba(0, 0, 0, 0.18);
+}
+
+/* Black keys: shorter, narrower, and over the top. */
+.pn-key--black {
+  height: 62%;
+  z-index: 2;
+  border: 1px solid #000;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(180deg, #4a4a52 0%, #24242a 46%, #101014 100%);
+  color: #b9b9c4;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.45);
+}
+.pn-key--black[data-down='true'] {
+  background: linear-gradient(180deg, #2f4a78 0%, #1d2f52 46%, #0d1526 100%);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+/* A key the sequencer is playing rather than one you are holding — same shape, but tinted,
+   so watching a piece play reads differently from playing it. */
+.pn-key[data-demo='true']:not(.pn-key--black) {
+  background: linear-gradient(180deg, #cfe4c8 0%, #ddeed7 62%, #b6cdae 100%);
+}
+.pn-key[data-demo='true'].pn-key--black {
+  background: linear-gradient(180deg, #35553a 0%, #203a26 46%, #0e1a12 100%);
+}
+
+.pn-key-label {
+  padding-bottom: 4px;
+  font-size: 9px;
+  /* The letter must not eat the click: the button underneath is the target. */
+  pointer-events: none;
+}

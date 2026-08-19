@@ -1,85 +1,44 @@
+import { durationOf, notesOf } from './music/notation.ts'
+import { PIECES } from './music/pieces.ts'
+import type { Note } from './music/notation.ts'
+
 /**
- * The library. Invented tracks — the point is a playlist with plausible lengths to
- * run a transport against, and made-up titles do that as well as real ones would.
+ * The library, which is real music now.
+ *
+ * It used to be invented titles with plausible lengths, there only to give the transport
+ * something to run against. Every field here is derived from an actual piece in
+ * music/pieces.ts instead: the length is how long it takes to play, and playing it is what
+ * you hear. That makes the seek bar, the clock, Next and the end-of-playlist behaviour all
+ * mean what they say.
+ *
+ * The notes come along on the track, because the transport needs to hand them to the
+ * synth and nothing else has to know where they came from.
  */
 
 export interface Track {
   id: string
   title: string
+  /** The composer. Shown in the Artist column, which is close enough to what it is. */
   artist: string
   album: string
-  /** Seconds. */
+  /** Seconds. Measured from the notation, not asserted. */
   length: number
-  /** Kilobits per second, for the status bar to quote. */
-  bitrate: number
+  /** What the status bar quotes where a real file would have a bitrate. */
+  detail: string
+  notes: Note[]
 }
 
-export const LIBRARY: Track[] = [
-  {
-    id: 't1',
-    title: 'Harbour Lights',
-    artist: 'The Cassette Deck',
-    album: 'Slow Ferry',
-    length: 227,
-    bitrate: 128,
-  },
-  {
-    id: 't2',
-    title: 'Dial Tone Waltz',
-    artist: 'Modem Quartet',
-    album: 'Handshake',
-    length: 184,
-    bitrate: 128,
-  },
-  {
-    id: 't3',
-    title: 'Blue Hour',
-    artist: 'Ilse Rahman',
-    album: 'Northerly',
-    length: 301,
-    bitrate: 160,
-  },
-  {
-    id: 't4',
-    title: 'Cassette Rewind',
-    artist: 'The Cassette Deck',
-    album: 'Slow Ferry',
-    length: 149,
-    bitrate: 128,
-  },
-  {
-    id: 't5',
-    title: 'Parking Garage Sunrise',
-    artist: 'Six Storey',
-    album: 'Level Four',
-    length: 268,
-    bitrate: 192,
-  },
-  {
-    id: 't6',
-    title: 'Screensaver',
-    artist: 'Modem Quartet',
-    album: 'Handshake',
-    length: 205,
-    bitrate: 128,
-  },
-  {
-    id: 't7',
-    title: 'Long Way Round',
-    artist: 'Ilse Rahman',
-    album: 'Northerly',
-    length: 342,
-    bitrate: 160,
-  },
-  {
-    id: 't8',
-    title: 'Last Bus',
-    artist: 'Six Storey',
-    album: 'Level Four',
-    length: 198,
-    bitrate: 192,
-  },
-]
+export const LIBRARY: Track[] = PIECES.map((piece) => ({
+  id: piece.id,
+  title: piece.title,
+  artist: piece.composer,
+  album: piece.collection,
+  length: durationOf(piece),
+  // There is no file and no bitrate. Saying so is better than quoting a number that
+  // would be a lie in a field nobody reads closely.
+  detail: `${piece.bpm} bpm, synthesised`,
+  notes: notesOf(piece),
+}))
 
 /** `3:42`, and `0:07` rather than `0:7`. */
 export function clock(seconds: number): string {

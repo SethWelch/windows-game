@@ -62,8 +62,12 @@ correctly-shaped content in the wrong place. Give the parent `isolation: isolate
 - **Gestures** use document listeners rather than pointer capture, because the grabbed
   element often unmounts mid-drag (see Solitaire). Write to the DOM during the gesture
   and re-render on release; keep a small threshold so `dblclick` still fires.
-- **Assets**: icons are inline SVG components, and every sound the *shell* makes is
-  synthesised at runtime by `src/os/audio.ts`. The only bitmaps are the desktop wallpaper
+- **Assets**: icons are inline SVG components, and every sound is synthesised at runtime —
+  the shell's by `src/os/audio.ts`, and every note of music by `src/os/instrument.ts` — one
+  struck-string voice shared by Media Player's library and the Piano, from pieces written out
+  as text in `apps/mediaPlayer/music/pieces.ts`. There are no `.mid` files, no soundfont and
+  no samples. A sequencer needs a note of known length and a keyboard needs one that rings
+  until released, which is why the instrument exposes both `strike` and `press`. The only bitmaps are the desktop wallpaper
   and the ten ad photos in `src/components/Popups/images/`. Keep it that way — a new icon
   is a component. The one exception to all of it is Media Player's Radio Tuner, which
   streams real audio from SomaFM through the project's only `<audio>` element; there are
@@ -75,6 +79,11 @@ correctly-shaped content in the wrong place. Give the parent `isolation: isolate
   perfectly and all 46 fail in the browser. `<audio>` has no `referrerPolicy` attribute the
   way `<img>` and `<iframe>` do, so the document policy is the only lever. More generally —
   when something works from `curl` and fails in the page, diff the *request*, not the code.
+- **Audio that lasts longer than an event goes through `audioBus()`** in `os/audio.ts`, not
+  its own `AudioContext` — browsers cap how many you get, and the tray's volume is a gain
+  in that one graph. Schedule it against `ctx.currentTime` with a lookahead window; a
+  `setInterval` that plays notes *when it fires* jitters audibly, one that only queues the
+  next 350ms does not.
 - **Third-party services** are reached by allowlist and credited in the UI, not silently:
   `LIVE_HOSTS` in `apps/netscape/sites.ts` for the web, `apps/mediaPlayer/somafm.ts` for
   radio. Both files record why that service and not another — HTTPS-only, CORS, no API
@@ -124,7 +133,16 @@ is higher than most codebases and that is intentional.
   A loop needs three things or it misbehaves in ways that are hard to trace: a `stopped`
   flag as well as `cancelAnimationFrame` (StrictMode's double-mount lets a cancel race an
   already-dispatched callback, and the dead loop then reschedules itself forever); a hard
-  `Math.min(dt, 50)` clamp (a backgrounded tab hands back a multi-second gap on waking);
+  `Math.max(0, Math.min(dt, 50))` clamp — **both** ends. The upper bound is the
+  backgrounded-tab gap. The lower bound is the one that bites: `last` is seeded with
+  `performance.now()` when the effect runs, but the first callback is handed the timestamp
+  of the frame *already in progress*, so `now - last` is negative on frame one. That is
+  invisible in a loop that only integrates position (the camera drifts a hair backwards)
+  and fatal in one that indexes with it — Ambience did `Math.floor(-0.0002)` → `-1`, and
+  JavaScript's `%` keeps the sign, so `PRESETS[-1]` was undefined and the first frame threw,
+  killing the loop before it drew anything. It only reproduced when the canvas mounted with
+  playback *already* running, because that is the only way the loop starts inside the same
+  frame that scheduled it;
   and `imageSmoothingEnabled` re-set immediately after **every** `canvas.width` assignment,
   because writing the size resets the whole 2D context. That last one is the classic — the
   symptom is a blurry canvas after a resize and the cause is nowhere near it. Ambience is

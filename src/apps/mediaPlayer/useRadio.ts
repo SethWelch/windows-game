@@ -106,6 +106,9 @@ export function useRadio(playing: boolean, volume: number, muted: boolean) {
      * and the whole point of them being there is that any one of them can be down.
      */
     const onError = () => {
+      // Detaching the source while stopped is not a failure, and on some browsers it
+      // raises this. Only a stream we are actually trying to hear counts.
+      if (!playing) return
       if (mirror + 1 < mirrors.length) {
         setAttempt({ id: station.id, index: mirror + 1 })
         return
@@ -123,8 +126,8 @@ export function useRadio(playing: boolean, volume: number, muted: boolean) {
     el.addEventListener('playing', flowing)
     el.addEventListener('pause', flowing)
 
-    if (el.src !== src) el.src = src
     if (playing) {
+      if (el.src !== src) el.src = src
       // Rejects if the browser refuses to autoplay, or if a pause interrupts the
       // promise — the latter is routine and not worth reporting.
       el.play().catch((e: Error) => {
@@ -133,6 +136,20 @@ export function useRadio(playing: boolean, volume: number, muted: boolean) {
       })
     } else {
       el.pause()
+      /*
+       * Detached, not merely paused. A paused element pointed at a live stream keeps its
+       * connection open and keeps pulling bytes, so stopping would leave us drawing a
+       * station we cannot hear — rude to a service that pays for its own bandwidth.
+       *
+       * Nothing is lost by it: a live stream has no position to resume from. Pressing
+       * play rejoins the broadcast wherever it has got to, which is what pressing play on
+       * a radio has always done. The station is React state and is untouched, so the
+       * tuning itself survives — which is what keeps the dial on screen after Stop.
+       */
+      if (el.getAttribute('src')) {
+        el.removeAttribute('src')
+        el.load()
+      }
     }
 
     return () => {

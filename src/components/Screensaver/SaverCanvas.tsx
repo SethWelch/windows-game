@@ -72,9 +72,12 @@ export function SaverCanvas({
     const frame = (now: number) => {
       handle = 0
       if (stopped) return
-      // Clamped hard: a backgrounded tab hands back a multi-second gap on the first frame
-      // after it wakes, and an unclamped delta makes every saver lurch.
-      const dt = Math.min(now - last, 50)
+      // Clamped at *both* ends. The upper bound is the backgrounded-tab gap; the lower
+      // bound is subtler and cost a real bug: `last` is set with `performance.now()` when
+      // the effect runs, but the first callback is handed the timestamp of the frame that
+      // was already in progress, which can be *earlier* than that. `now - last` is then
+      // negative, and anything integrating dt runs backwards on its first frame.
+      const dt = Math.max(0, Math.min(now - last, 50))
       last = now
       const ctx = canvas.getContext('2d')
       if (ctx && paint) paint(ctx, dt)

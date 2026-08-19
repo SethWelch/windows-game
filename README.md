@@ -234,8 +234,16 @@ npm run dev
   stylesheet, so a draft cannot look one way in the editor and another way in the
   browser. The real Composer was WYSIWYG and had no idea what CSS was — both
   departures are commented where they are made.
-- **Windows Media Player** — the blue Corona look, with the feature bar, a working
-  transport over an invented library, shuffle/repeat, and four visualizations.
+- **Windows Media Player** — the blue Corona look, with the feature bar, shuffle/repeat,
+  and four visualizations. **The library is real music.** Five public-domain pieces — Bach's
+  Prelude in C, Pachelbel's Canon, Für Elise, Ode to Joy and the tune Mozart varied in
+  K. 265 — written out as notes in `music/pieces.ts` and played by two oscillators and an
+  a falling filter — a struck string the way a subtractive synth builds one, which is roughly
+  what a PC without a wavetable card sounded like. No `.mid`
+  files and no soundfont: the project still ships no binary assets, and a hand transcription
+  of a public-domain composition is nobody else's arrangement. That makes the transport
+  honest — the seek bar seeks, the clock is read off the audio clock rather than counted,
+  and the length of a track is how long it takes to play.
   **Skin Chooser works**: five skins — Corona (the blue it ships in), a brushed-silver
   Roundlet, gold Pyrite, violet Headspace and green QuickPlay — chosen from a list with a
   live preview, and remembered. They are palettes rather than the bitmap-and-XML bundles
@@ -268,6 +276,14 @@ npm run dev
   move between stations without going back to Radio Tuner. SomaFM is credited with a link
   wherever one of their streams is what you are hearing — they take no advertising and
   run on donations. Media Guide, Copy from CD and the rest still say why they can't work.
+- **Piano** — three octaves that play the same instrument Media Player's library does. Click
+  a key, drag across them to run up the keyboard, or type: the `z`/`q`-row layout every
+  soft-synth has used since the nineties, printed on the keys so it needs no explaining.
+  There's a sustain pedal and an octave shift, and **Play** hands one of the library's pieces
+  to the sequencer and lights the keys as it goes — which is the only thing here that shows
+  you what a piece looks like under the hands. It exists because the sound already did:
+  `os/instrument.ts` was written for the library, and a struck string you can only listen to
+  is a waste of one.
 - **WordPad** — real rich text in a `contentEditable`: bold/italic/underline, font
   family and size, text colour, alignment, bullets, Date/Time, plus the toolbar,
   format bar, ruler and status bar as four independent View toggles. Saves `.rtf`
@@ -308,6 +324,9 @@ npm run dev
 | `src/os/startMenu.ts` | The pinned programs list. `startMenuSection: 'pinned'` only seeds it; pinning is a user decision, so it can't live in code. |
 | `src/apps/mediaPlayer/skins.ts` | The skins. Palettes, not bitmaps — MediaPlayer.css derives every colour from `--wmp-hue`/`--wmp-sat`/`--wmp-lift`, so a skin is three numbers. |
 | `src/os/mediaPlayer.ts` | Media Player's own volume and skin, persisted. Separate from the shell mixer in `os/audio.ts` because they were separate things, and multiplied together for what you actually hear. |
+| `src/apps/mediaPlayer/music/notation.ts` | The notation the library is written in, and the bar-line check that catches a dropped beat in a transcription. |
+| `src/os/instrument.ts` | The struck-string voice, shared by Media Player and the Piano. Records the four separate reasons the first version sounded flat. A sequencer wants a note of known length; a keyboard wants one that sounds until released — hence both `strike` and `press`. |
+| `src/apps/mediaPlayer/synth.ts` | The sequencer. Scheduled on the audio clock with a lookahead — never on a timer, or every note would jitter. |
 | `src/apps/mediaPlayer/somafm.ts` | The station list, and the only place real audio enters the project. Records why SomaFM rather than a directory: every channel is HTTPS, which an HTTPS page requires, and its streams send CORS, which is what a real analyser would need. |
 | `src/apps/mediaPlayer/ambience.ts` | The frame-feedback visualization, as a table of presets over one engine. Every rate is per second and raised to the power of `dt`, because feedback compounds; expansion and ink are per preset, because they are what make one look different from another. |
 | `src/apps/netscape/sites.ts` | The two websites, plus Navigator's default stylesheet. The grey canvas belongs to the browser, not the pages. `draftDocument` lends that stylesheet to Composer, so editor and browser cannot disagree. |

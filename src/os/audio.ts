@@ -100,6 +100,8 @@ const listeners = new Set<() => void>()
 
 function commit(next: Settings) {
   settings = next
+  // Reaches anything already sounding — see applyGain.
+  applyGain()
   try {
     localStorage.setItem(KEY, JSON.stringify(next))
   } catch {
@@ -135,9 +137,35 @@ function engine(): { ctx: AudioContext; out: GainNode } | null {
   }
   if (context.state === 'suspended') void context.resume()
 
+  applyGain()
+  return { ctx: context, out: master }
+}
+
+/**
+ * Pushes the mixer setting into the graph.
+ *
+ * Called from `engine()` for one-shot sounds and from `commit()` for everything else. That
+ * second caller is what makes the tray slider work on sound that is *already* playing —
+ * a shell ding is over before you could move a slider, but Media Player's synth runs for
+ * minutes, and before this the master gain only moved when some other sound happened to
+ * rebuild it.
+ */
+function applyGain() {
+  if (!master) return
   // Squared, because loudness isn't linear in the slider's position.
   master.gain.value = settings.muted ? 0 : (settings.volume / 100) ** 2
-  return { ctx: context, out: master }
+}
+
+/**
+ * The shared graph, for something that makes sound over time rather than in one event.
+ *
+ * Media Player's synth is the only caller. It gets the same context and the same master
+ * gain as the shell's own sounds, so the tray's volume and mute cover it without the
+ * player having to know they exist — and there is only ever one `AudioContext`, which
+ * browsers are strict about.
+ */
+export function audioBus(): { ctx: AudioContext; out: GainNode } | null {
+  return engine()
 }
 
 function playTones(ctx: AudioContext, out: GainNode, tones: Tone[]) {

@@ -16,6 +16,7 @@ import { RadioTuner } from './RadioTuner.tsx'
 import { SkinChooser } from './SkinChooser.tsx'
 import { SOMA_CREDIT, SOMA_HOME } from './somafm.ts'
 import type { Station } from './somafm.ts'
+import { useMusic } from './useMusic.ts'
 import { useRadio } from './useRadio.ts'
 import { Visualizer } from './visualizer.tsx'
 import type { Visualization } from './visualizer.tsx'
@@ -81,6 +82,14 @@ export function MediaPlayer({ windowId }: AppProps) {
   // is no duration to invent, so the seek bar simply has nothing to do.
   const length = onAir ? 0 : (track?.length ?? 0)
 
+  // Silent while a station is on: one transport, two things it can be driving.
+  const music = useMusic({
+    notes: onAir ? null : (track?.notes ?? null),
+    playing,
+    volume,
+    muted,
+  })
+
   useEffect(() => {
     const name = onAir ? onAir.title : track?.title
     wm.setTitle(windowId, name ? `${name} - Windows Media Player` : 'Windows Media Player')
@@ -111,7 +120,9 @@ export function MediaPlayer({ windowId }: AppProps) {
         setPosition((p) => p + STEP)
         return
       }
-      const next = s.position + STEP
+      // Read, not incremented. The synth is scheduled on the audio clock and this is
+      // that clock — a stopwatch here would slowly disagree with what you can hear.
+      const next = music.position()
       if (next < s.length) {
         setPosition(next)
         return
@@ -132,9 +143,18 @@ export function MediaPlayer({ windowId }: AppProps) {
       setPosition(0)
     }, TICK_MS)
     return () => window.clearInterval(id)
-  }, [playing])
+  }, [playing, music])
 
+  /**
+   * Playing a song is the one thing that leaves the radio.
+   *
+   * Reached from the Media Library table and from the playlist's own rows — and the
+   * playlist only offers tracks when no station is on, so in practice this is "you went
+   * to the library and started something", which is exactly when the transport should
+   * stop being a tuner.
+   */
   const playTrack = (index: number) => {
+    radio.untune()
     setCurrent(index)
     setSelected(index)
     setPosition(0)
@@ -151,15 +171,20 @@ export function MediaPlayer({ windowId }: AppProps) {
   const actions = {
     playPause: () => {
       // Hitting play at the end of the playlist starts it over. A stream has no end.
-      if (!onAir && !playing && position >= length && length > 0) setPosition(0)
+      if (!onAir && !playing && position >= length && length > 0) {
+        setPosition(0)
+        music.seek(0)
+      }
       setPlaying((p) => !p)
     },
     stop: () => {
       setPlaying(false)
       setPosition(0)
-      // Stop on the radio releases the station: leaving it tuned but silent would hold
-      // the connection open and leave the transport pointing at nothing.
-      if (onAir) radio.untune()
+      music.seek(0)
+      // The station stays tuned. Stop means stop listening, not forget where you were —
+      // the list beside the visualization is still the dial, and pressing play picks the
+      // same station back up. The connection is released either way; `useRadio` detaches
+      // the stream whenever playback stops, so nothing is held open.
     },
     // Next and previous walk the station list while the radio is on, which is what a
     // tuner's buttons are for.
@@ -178,6 +203,27 @@ export function MediaPlayer({ windowId }: AppProps) {
     about: () => setAbout(true),
     exit: () => wm.close(windowId),
   }
+
+  /**
+   * The two lines over the visualization while a station is up.
+   *
+   * Stopped names the station rather than the track, because the track is whatever was
+   * playing when you stopped and is getting staler by the minute — the station is the
+   * thing that is still true. Now that Stop leaves the dial tuned, this state is one you
+   * can sit in.
+   */
+  const onAirLines = onAir
+    ? {
+        top: playing ? (radio.song?.artist ?? onAir.title) : onAir.title,
+        bottom:
+          radio.error ??
+          (!playing
+            ? onAir.description
+            : radio.waiting && !radio.song
+              ? `Connecting to ${onAir.title}...`
+              : (radio.song?.title ?? onAir.description)),
+      }
+    : null
 
   const menus = buildPlayerMenus(actions, {
     playing,
@@ -237,15 +283,8 @@ export function MediaPlayer({ windowId }: AppProps) {
                         />
                       )}
                       <span className="wmp-np-lines">
-                        <span className="wmp-np-artist">
-                          {radio.song?.artist ?? onAir.title}
-                        </span>
-                        <span className="wmp-np-title">
-                          {radio.error ??
-                            (radio.waiting && !radio.song
-                              ? `Connecting to ${onAir.title}...`
-                              : (radio.song?.title ?? onAir.description))}
-                        </span>
+                        <span className="wmp-np-artist">{onAirLines?.top}</span>
+                        <span className="wmp-np-title">{onAirLines?.bottom}</span>
                         <span className="wmp-np-station">{onAir.title} — SomaFM</span>
                       </span>
                     </div>
@@ -388,7 +427,11 @@ export function MediaPlayer({ windowId }: AppProps) {
             aria-label="Seek"
             // Nothing to seek within on a live stream, and the real player greyed it too.
             disabled={!!onAir}
-            onChange={(e) => setPosition(Number(e.target.value))}
+            onChange={(e) => {
+              const to = Number(e.target.value)
+              setPosition(to)
+              music.seek(to)
+            }}
           />
           <span className="wmp-time">
             {onAir ? `${clock(position)} live` : `${clock(position)} / ${clock(length)}`}
@@ -548,7 +591,7 @@ export function MediaPlayer({ windowId }: AppProps) {
             ''
           )}
         </span>
-        <span>{onAir ? 'Live stream' : track ? `${track.bitrate} Kbps` : ''}</span>
+        <span>{onAir ? 'Live stream' : (track?.detail ?? '')}</span>
       </div>
 
       {about && (
@@ -559,9 +602,10 @@ export function MediaPlayer({ windowId }: AppProps) {
             Version 9.00.00.2980
             <br />
             <br />
-            The library is invented and the transport that runs it is a stopwatch — but
-            Radio Tuner is real, and plays real stations from SomaFM. The visualizations
-            are real too; the bars bounce in CSS, so they cost nothing to watch.
+            The library is five public-domain pieces, written out as notes and played by
+            two oscillators and an envelope — which is roughly what a PC without a
+            wavetable card sounded like. Radio Tuner is real too, and plays real stations
+            from SomaFM.
           </div>
           <div className="xp-dialog-buttons">
             <button

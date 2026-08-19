@@ -9,6 +9,7 @@ import { NetscapeIcon } from './NetscapeIcon.tsx'
 import { MyComputerIcon } from './MyComputerIcon.tsx'
 import { NotepadIcon } from './NotepadIcon.tsx'
 import { PaintIcon } from './PaintIcon.tsx'
+import { PianoIcon } from './PianoIcon.tsx'
 import { RecycleBinIcon } from './RecycleBinIcon.tsx'
 import { ShortcutOverlay } from './ShortcutOverlay.tsx'
 import { SoundRecorderIcon } from './SoundRecorderIcon.tsx'
@@ -47,6 +48,7 @@ export const ICONS = {
   composer: ComposerIcon,
   soundRecorder: SoundRecorderIcon,
   paint: PaintIcon,
+  piano: PianoIcon,
   wordpad: WordPadIcon,
   mediaPlayer: MediaPlayerIcon,
   spam: SpamIcon,
